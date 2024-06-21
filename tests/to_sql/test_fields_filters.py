@@ -10,13 +10,13 @@ def test_filter__eq__ok(
     expected_item_name = "expected_item_name"
 
     # Create expected item
-    expected_item = models_factory.ItemFactory.create(name="expected_item_name")
+    expected_item = models_factory.ItemFactory.create(name=expected_item_name)
 
     # Create unexpected items
     models_factory.ItemFactory.create_batch(size=4)
 
     filters_model = get_sqlalchemy_filters_model(
-        model=models.Item,
+        base_model=models.Item,
         field_kwargs={
             "name": (str, ...),
         },
@@ -33,8 +33,7 @@ def test_filter__eq__ok(
 
     result = results[0]
 
-    assert result.id == expected_item.id
-    assert result.name == expected_item_name
+    assert result.as_dict() == expected_item.as_dict()
 
 
 def test_filter__in_not_in__ok(
@@ -73,7 +72,7 @@ def test_filter__in_not_in__ok(
         ("number__not_in", [first_item, second_item, third_item]),
     ):
         filters_model = get_sqlalchemy_filters_model(
-            model=models.Item,
+            base_model=models.Item,
             field_kwargs={
                 field: (list[int], ...),
             },
@@ -87,8 +86,7 @@ def test_filter__in_not_in__ok(
         assert len(results) == len(expected_items)
 
         for expected_item, result in zip(expected_items, results):
-            assert result.id == expected_item.id
-            assert result.number == expected_item.number
+            assert result.as_dict() == expected_item.as_dict()
 
 
 def test_filter__in_not_in__dates__ok(
@@ -129,7 +127,7 @@ def test_filter__in_not_in__dates__ok(
         ("created_at__not_in", [first_item, second_item, third_item]),
     ):
         filters_model = get_sqlalchemy_filters_model(
-            model=models.Item,
+            base_model=models.Item,
             field_kwargs={
                 field: (list[dt.datetime], ...),
             },
@@ -143,8 +141,7 @@ def test_filter__in_not_in__dates__ok(
         assert len(results) == len(expected_items)
 
         for expected_item, result in zip(expected_items, results):
-            assert result.id == expected_item.id
-            assert result.created_at == expected_item.created_at
+            assert result.as_dict() == expected_item.as_dict()
 
 
 def test_filter__gt_lt_gte_lte__ok(
@@ -165,7 +162,7 @@ def test_filter__gt_lt_gte_lte__ok(
         ("number__lte", [1, 2, 3]),
     ):
         filters_model = get_sqlalchemy_filters_model(
-            model=models.Item,
+            base_model=models.Item,
             field_kwargs={
                 field: (int, ...),
             },
@@ -203,7 +200,7 @@ def test_filter__not__ok(
         )
 
     filters_model = get_sqlalchemy_filters_model(
-        model=models.Item,
+        base_model=models.Item,
         field_kwargs={
             "name__not": (str, ...),
         },
@@ -219,8 +216,7 @@ def test_filter__not__ok(
     assert len(results) == len(expected_item_names)
 
     for expected_item, result in zip(expected_items, results):
-        assert result.id == expected_item.id
-        assert result.created_at == expected_item.created_at
+        assert result.as_dict() == expected_item.as_dict()
 
 
 def test_filter__is_is_not__ok(
@@ -234,9 +230,22 @@ def test_filter__is_is_not__ok(
 
     assert db_session.query(models.Item).count() == 2
 
-    for is_valid, expected_item in ((True, valid_item), (False, not_valid_item)):
+    for is_valid, expected_items in (
+        (
+            False,
+            [
+                not_valid_item,
+            ],
+        ),
+        (
+            True,
+            [
+                valid_item,
+            ],
+        ),
+    ):
         filters_model = get_sqlalchemy_filters_model(
-            model=models.Item,
+            base_model=models.Item,
             field_kwargs={
                 "is_valid__is": (bool, ...),
             },
@@ -247,15 +256,27 @@ def test_filter__is_is_not__ok(
 
         results = db_session.query(models.Item).filter(*filters_model.to_sql()).all()
 
-        assert len(results) == 1
+        assert len(results) == len(expected_items)
 
-        result = results[0]
-        assert result.id == expected_item.id
-        assert result.is_valid is is_valid
+        for expected_item, result in zip(expected_items, results):
+            assert result.as_dict() == expected_item.as_dict()
 
-    for is_valid, expected_item in ((False, valid_item), (True, not_valid_item)):
+    for is_valid, expected_items in (
+        (
+            False,
+            [
+                valid_item,
+            ],
+        ),
+        (
+            True,
+            [
+                not_valid_item,
+            ],
+        ),
+    ):
         filters_model = get_sqlalchemy_filters_model(
-            model=models.Item,
+            base_model=models.Item,
             field_kwargs={
                 "is_valid__is_not": (bool, ...),
             },
@@ -266,11 +287,10 @@ def test_filter__is_is_not__ok(
 
         results = db_session.query(models.Item).filter(*filters_model.to_sql()).all()
 
-        assert len(results) == 1
+        assert len(results) == len(expected_items)
 
-        result = results[0]
-        assert result.id == expected_item.id
-        assert result.is_valid is not is_valid
+        for expected_item, result in zip(expected_items, results):
+            assert result.as_dict() == expected_item.as_dict()
 
 
 def test_filter__like_ilike__ok(
@@ -284,12 +304,24 @@ def test_filter__like_ilike__ok(
 
     assert db_session.query(models.Item).count() == 2
 
-    for field, filter_value, expected_item in (
-        ("name__like", "name", first_item),
-        ("name__ilike", "other name", second_item),
+    for field, filter_value, expected_items in (
+        (
+            "name__like",
+            "%name%",
+            [
+                first_item,
+            ],
+        ),
+        (
+            "name__ilike",
+            "%other name%",
+            [
+                second_item,
+            ],
+        ),
     ):
         filters_model = get_sqlalchemy_filters_model(
-            model=models.Item,
+            base_model=models.Item,
             field_kwargs={
                 field: (str, ...),
             },
@@ -300,8 +332,7 @@ def test_filter__like_ilike__ok(
 
         results = db_session.query(models.Item).filter(*filters_model.to_sql()).all()
 
-        assert len(results) == 1
+        assert len(results) == len(expected_items)
 
-        result = results[0]
-        assert result.id == expected_item.id
-        assert result.name == expected_item.name
+        for expected_item, result in zip(expected_items, results):
+            assert result.as_dict() == expected_item.as_dict()

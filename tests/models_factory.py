@@ -20,6 +20,23 @@ class CustomSQLAlchemyModelFactory(factory.Factory):
         return obj
 
 
+class GroupFactory(CustomSQLAlchemyModelFactory):
+    class Meta:
+        model = models.Group
+
+    created_at = factory.LazyFunction(lambda: dt.datetime.now())
+    name = factory.Faker("word")
+    is_active = factory.Faker("boolean")
+
+    class Params:
+        with_item = factory.Trait(
+            _factory_boy_group=factory.RelatedFactory(
+                "tests.models_factory.ItemFactory",
+                factory_related_name="group",
+            ),
+        )
+
+
 class ItemFactory(CustomSQLAlchemyModelFactory):
     class Meta:
         model = models.Item
