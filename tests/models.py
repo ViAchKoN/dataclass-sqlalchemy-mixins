@@ -23,6 +23,26 @@ class BaseModel:
         return {c.name: getattr(self, c.name) for c in self.__table__.columns}  # type: ignore
 
 
+class Owner(BaseModel):
+    __tablename__ = "Owner"
+
+    id_seq = Sequence("seq_parent_item_id", metadata=BaseModel.metadata)
+    id = sa.Column(
+        sa.Integer,
+        primary_key=True,
+        server_default=id_seq.next_value(),
+    )
+    first_name = sa.Column(
+        sa.String,
+        nullable=False,
+    )
+    last_name = sa.Column(
+        sa.String,
+        nullable=False,
+    )
+    email = sa.Column(sa.String, nullable=True)
+
+
 class Group(BaseModel):
     __tablename__ = "group"
 
@@ -40,6 +60,13 @@ class Group(BaseModel):
         default=False,
         nullable=False,
     )
+    owner_id = sa.Column(
+        sa.Integer,
+        sa.ForeignKey(
+            Owner.id,
+        ),
+    )
+    owner = relationship(Owner)
 
     items = relationship("Item", back_populates="group", lazy="dynamic")
 

@@ -1,7 +1,7 @@
 import typing as tp
 
 from sqlalchemy import BinaryExpression, inspect
-from sqlalchemy.orm import DeclarativeMeta
+from sqlalchemy.orm import DeclarativeMeta, InstrumentedAttribute
 
 
 SQLALCHEMY_OP_MATCHER = {
@@ -17,6 +17,7 @@ SQLALCHEMY_OP_MATCHER = {
     "is_not": "is_not",
     "like": "like",
     "ilike": "ilike",
+    "isnull": "isnull",
 }
 
 
@@ -28,28 +29,25 @@ class SqlAlchemyFilterConverter:
 
     @staticmethod
     def get_foreign_key_filtered_column(
-        original_model: tp.Type[DeclarativeMeta],
+        model: tp.Type[DeclarativeMeta],
         models_path_to_look: tp.List[str],
-    ):
-        related_model = None
+    ) -> tp.Union[None, InstrumentedAttribute]:
         for path in models_path_to_look:
-            model_attrs = inspect(original_model)
+            model_attrs = inspect(model)
 
             model_relationships = getattr(model_attrs, "relationships", None)
 
             if model_relationships:
-                related_model = getattr(
-                    inspect(original_model).relationships, path, None
-                )
+                related_model = getattr(inspect(model).relationships, path, None)
 
                 if related_model:
                     # Updating original model to continue search
-                    original_model = related_model
+                    model = related_model.argument
                     continue
 
             # If related model is None
             # we might come to field required filtering
-            foreign_key_db_column = getattr(related_model.argument, path, None)
+            foreign_key_db_column = getattr(model, path, None)
             return foreign_key_db_column
 
         return related_model
@@ -73,22 +71,27 @@ class SqlAlchemyFilterConverter:
 
                 # Op should be always the last one
                 last_param = filter_params[-1]
+
                 sql_op = SQLALCHEMY_OP_MATCHER.get(last_param)
+
+                if sql_op == "isnull":
+                    sql_op = (
+                        SQLALCHEMY_OP_MATCHER.get("is")
+                        if value
+                        else SQLALCHEMY_OP_MATCHER.get("is_not")
+                    )
+                    value = None
 
                 if sql_op:
                     filter_params = filter_params[:-1]
 
                 if len(filter_params) > 1:
-                    foreign_key_db_column = cls.get_foreign_key_filtered_column(
-                        original_model=model,
+                    db_field = cls.get_foreign_key_filtered_column(
+                        model=model,
                         models_path_to_look=filter_params,
                     )
-                    if foreign_key_db_column is None:
+                    if db_field is None:
                         raise ValueError
-
-                    db_field = foreign_key_db_column
-                    if sql_op is None:
-                        sql_op = SQLALCHEMY_OP_MATCHER.get("eq")
                 else:
                     field = filter_params[0]
 
