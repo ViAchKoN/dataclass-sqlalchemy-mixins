@@ -20,6 +20,15 @@ class CustomSQLAlchemyModelFactory(factory.Factory):
         return obj
 
 
+class OwnerFactory(CustomSQLAlchemyModelFactory):
+    class Meta:
+        model = models.Owner
+
+    first_name = factory.Faker("first_name")
+    last_name = factory.Faker("last_name")
+    email = factory.Faker("email")
+
+
 class GroupFactory(CustomSQLAlchemyModelFactory):
     class Meta:
         model = models.Group
@@ -27,6 +36,7 @@ class GroupFactory(CustomSQLAlchemyModelFactory):
     created_at = factory.LazyFunction(lambda: dt.datetime.now())
     name = factory.Faker("word")
     is_active = factory.Faker("boolean")
+    owner = factory.SubFactory(OwnerFactory)
 
     class Params:
         with_item = factory.Trait(
