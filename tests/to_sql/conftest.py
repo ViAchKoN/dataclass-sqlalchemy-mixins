@@ -10,13 +10,13 @@ from core.sqlalchemy_base_models import SqlAlchemyFiltersModel
 @pytest.fixture
 def get_sqlalchemy_filters_model():
     def sqlalchemy_filters_model(
-        model: tp.Type[DeclarativeBase],
+        base_model: tp.Type[DeclarativeBase],
         field_kwargs: tp.Dict[type, tp.Any],
         model_kwargs: tp.Dict[str, tp.Any],
     ):
         class CustomSqlAlchemyFiltersModel(SqlAlchemyFiltersModel):
-            class Config:
-                filtered_model: tp.Type[DeclarativeBase] = model
+            class ConverterConfig:
+                model = base_model
 
             @classmethod
             def add_fields(cls, **field_definitions: tp.Any):

@@ -41,6 +41,8 @@ class Group(BaseModel):
         nullable=False,
     )
 
+    items = relationship("Item", back_populates="group", lazy="dynamic")
+
 
 class Item(BaseModel):
     __tablename__ = "item"

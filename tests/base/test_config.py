@@ -5,19 +5,17 @@ from tests.models import Item
 
 
 def test_filter_model__init__ok():
-
     class SomeSqlAlchemyFiltersModel(SqlAlchemyFiltersModel):
-        class Config:
-            filtered_model = Item
+        class ConverterConfig:
+            model = Item
 
     SomeSqlAlchemyFiltersModel()
 
 
 def test_filter_model__init__no_filtered_model__error():
-
     class SomeSqlAlchemyFiltersModel(SqlAlchemyFiltersModel):
-        class Config:
-            filtered_model = None
+        class ConverterConfig:
+            model = None
 
     with pytest.raises(ValueError) as e:
         SomeSqlAlchemyFiltersModel()
