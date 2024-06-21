@@ -1,0 +1,28 @@
+[tool.poetry]
+name = "dataclass-sqlalchemy-filters"
+version = "0.1.0"
+description = "Allows to convert pydantic dataclasses to sqlalchemy filters."
+authors = ["ViAchKoN"]
+readme = "README.md"
+packages = [{include = "dataclass_sqlalchemy_filters"}]
+
+[tool.poetry.dependencies]
+python = "^3.9"
+pydantic = "^2.7.4"
+sqlalchemy = "^2.0.30"
+
+[tool.poetry.group.dev.dependencies]
+fastapi = "^0.111.0"
+pytest = "^8.2.2"
+sqlalchemy-utils = "^0.41.2"
+faker = "^25.8.0"
+factory-boy = "^3.3.0"
+psycopg2-binary = "^2.9.9"
+black = "^24.4.2"
+isort = "^5.13.2"
+flake8 = "^7.1.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
