@@ -22,9 +22,6 @@ SQLALCHEMY_OP_MATCHER = {
 
 
 class SqlAlchemyFilterConverter:
-    class ConverterConfig:
-        model: tp.Type[DeclarativeMeta] = None
-
     DEFAULT_SQLALCHEMY_SQL_OP = SQLALCHEMY_OP_MATCHER.get("eq")
 
     @staticmethod
@@ -50,7 +47,7 @@ class SqlAlchemyFilterConverter:
             foreign_key_db_column = getattr(model, path, None)
             return foreign_key_db_column
 
-        return related_model
+        return model
 
     @classmethod
     def get_filters_binary_expressions(
@@ -95,13 +92,6 @@ class SqlAlchemyFilterConverter:
                 else:
                     field = filter_params[0]
 
-                # It could be related model field in the end,
-                # that is why we need to check that
-                # if sql_op is None:
-
-                # raise KeyError(
-                #     f"Unsupported sql operation provided. Supported {', '.join(list(SQLALCHEMY_OP_MATCHER.keys()))}"
-                # )
             if db_field is None:
                 db_field = getattr(model, field)
 

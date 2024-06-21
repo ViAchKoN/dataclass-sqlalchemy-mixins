@@ -1,11 +1,22 @@
 import datetime as dt
 
+import pytest
+from sqlalchemy import select
+
 from tests import models, models_factory
 
 
+@pytest.mark.parametrize(
+    "apply_filters",
+    [
+        True,
+        False,
+    ],
+)
 def test_filter__eq__ok(
     db_session,
     get_sqlalchemy_filters_model,
+    apply_filters,
 ):
     expected_item_name = "expected_item_name"
 
@@ -27,7 +38,12 @@ def test_filter__eq__ok(
 
     assert db_session.query(models.Item).count() == 5
 
-    results = db_session.query(models.Item).filter(*filters_model.to_sql()).all()
+    if apply_filters:
+        query = select(models.Item)
+        query = filters_model.apply_filters(query=query)
+        results = db_session.execute(query).scalars().all()
+    else:
+        results = db_session.query(models.Item).filter(*filters_model.to_sql()).all()
 
     assert len(results) == 1
 
@@ -36,9 +52,17 @@ def test_filter__eq__ok(
     assert result.as_dict() == expected_item.as_dict()
 
 
+@pytest.mark.parametrize(
+    "apply_filters",
+    [
+        True,
+        False,
+    ],
+)
 def test_filter__in_not_in__ok(
     db_session,
     get_sqlalchemy_filters_model,
+    apply_filters,
 ):
     first_number = 1
     first_item = models_factory.ItemFactory.create(
@@ -81,7 +105,14 @@ def test_filter__in_not_in__ok(
             },
         )
 
-        results = db_session.query(models.Item).filter(*filters_model.to_sql()).all()
+        if apply_filters:
+            query = select(models.Item)
+            query = filters_model.apply_filters(query=query)
+            results = db_session.execute(query).scalars().all()
+        else:
+            results = (
+                db_session.query(models.Item).filter(*filters_model.to_sql()).all()
+            )
 
         assert len(results) == len(expected_items)
 
@@ -89,9 +120,17 @@ def test_filter__in_not_in__ok(
             assert result.as_dict() == expected_item.as_dict()
 
 
+@pytest.mark.parametrize(
+    "apply_filters",
+    [
+        True,
+        False,
+    ],
+)
 def test_filter__in_not_in__dates__ok(
     db_session,
     get_sqlalchemy_filters_model,
+    apply_filters,
 ):
     now = dt.datetime.now()
 
@@ -136,7 +175,14 @@ def test_filter__in_not_in__dates__ok(
             },
         )
 
-        results = db_session.query(models.Item).filter(*filters_model.to_sql()).all()
+        if apply_filters:
+            query = select(models.Item)
+            query = filters_model.apply_filters(query=query)
+            results = db_session.execute(query).scalars().all()
+        else:
+            results = (
+                db_session.query(models.Item).filter(*filters_model.to_sql()).all()
+            )
 
         assert len(results) == len(expected_items)
 
@@ -144,9 +190,17 @@ def test_filter__in_not_in__dates__ok(
             assert result.as_dict() == expected_item.as_dict()
 
 
+@pytest.mark.parametrize(
+    "apply_filters",
+    [
+        True,
+        False,
+    ],
+)
 def test_filter__gt_lt_gte_lte__ok(
     db_session,
     get_sqlalchemy_filters_model,
+    apply_filters,
 ):
     for i in range(1, 6):
         models_factory.ItemFactory.create(
@@ -171,7 +225,14 @@ def test_filter__gt_lt_gte_lte__ok(
             },
         )
 
-        results = db_session.query(models.Item).filter(*filters_model.to_sql()).all()
+        if apply_filters:
+            query = select(models.Item)
+            query = filters_model.apply_filters(query=query)
+            results = db_session.execute(query).scalars().all()
+        else:
+            results = (
+                db_session.query(models.Item).filter(*filters_model.to_sql()).all()
+            )
 
         assert len(results) == len(expected_item_numbers)
 
@@ -179,9 +240,17 @@ def test_filter__gt_lt_gte_lte__ok(
             assert result.number == expected_item_number
 
 
+@pytest.mark.parametrize(
+    "apply_filters",
+    [
+        True,
+        False,
+    ],
+)
 def test_filter__not__ok(
     db_session,
     get_sqlalchemy_filters_model,
+    apply_filters,
 ):
     expected_item_names = [
         "expected_item_name_1",
@@ -211,7 +280,12 @@ def test_filter__not__ok(
 
     assert db_session.query(models.Item).count() == 4
 
-    results = db_session.query(models.Item).filter(*filters_model.to_sql()).all()
+    if apply_filters:
+        query = select(models.Item)
+        query = filters_model.apply_filters(query=query)
+        results = db_session.execute(query).scalars().all()
+    else:
+        results = db_session.query(models.Item).filter(*filters_model.to_sql()).all()
 
     assert len(results) == len(expected_item_names)
 
@@ -219,9 +293,17 @@ def test_filter__not__ok(
         assert result.as_dict() == expected_item.as_dict()
 
 
+@pytest.mark.parametrize(
+    "apply_filters",
+    [
+        True,
+        False,
+    ],
+)
 def test_filter__is_is_not__ok(
     db_session,
     get_sqlalchemy_filters_model,
+    apply_filters,
 ):
     valid_item = models_factory.ItemFactory.create(
         is_valid=True,
@@ -254,7 +336,14 @@ def test_filter__is_is_not__ok(
             },
         )
 
-        results = db_session.query(models.Item).filter(*filters_model.to_sql()).all()
+        if apply_filters:
+            query = select(models.Item)
+            query = filters_model.apply_filters(query=query)
+            results = db_session.execute(query).scalars().all()
+        else:
+            results = (
+                db_session.query(models.Item).filter(*filters_model.to_sql()).all()
+            )
 
         assert len(results) == len(expected_items)
 
@@ -293,9 +382,17 @@ def test_filter__is_is_not__ok(
             assert result.as_dict() == expected_item.as_dict()
 
 
+@pytest.mark.parametrize(
+    "apply_filters",
+    [
+        True,
+        False,
+    ],
+)
 def test_filter__like_ilike__ok(
     db_session,
     get_sqlalchemy_filters_model,
+    apply_filters,
 ):
     first_item = models_factory.ItemFactory.create(
         name="first name",
@@ -330,7 +427,14 @@ def test_filter__like_ilike__ok(
             },
         )
 
-        results = db_session.query(models.Item).filter(*filters_model.to_sql()).all()
+        if apply_filters:
+            query = select(models.Item)
+            query = filters_model.apply_filters(query=query)
+            results = db_session.execute(query).scalars().all()
+        else:
+            results = (
+                db_session.query(models.Item).filter(*filters_model.to_sql()).all()
+            )
 
         assert len(results) == len(expected_items)
 
