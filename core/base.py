@@ -1,7 +1,7 @@
 import typing as tp
 
-from sqlalchemy import BinaryExpression, inspect
-from sqlalchemy.orm import DeclarativeMeta, InstrumentedAttribute
+from sqlalchemy import BinaryExpression, Select, inspect
+from sqlalchemy.orm import DeclarativeMeta, InstrumentedAttribute, Query
 
 
 SQLALCHEMY_OP_MATCHER = {
@@ -21,15 +21,20 @@ SQLALCHEMY_OP_MATCHER = {
 }
 
 
-class SqlAlchemyFilterConverter:
+class SqlAlchemyFilterConverterMixin:
     DEFAULT_SQLALCHEMY_SQL_OP = SQLALCHEMY_OP_MATCHER.get("eq")
 
-    @staticmethod
+    class ConverterConfig:
+        model: tp.Type[DeclarativeMeta] = None
+
     def get_foreign_key_filtered_column(
-        model: tp.Type[DeclarativeMeta],
+        self,
         models_path_to_look: tp.List[str],
-    ) -> tp.Union[None, InstrumentedAttribute]:
+    ) -> tp.Tuple[DeclarativeMeta, tp.Union[None, InstrumentedAttribute]]:
+        model = self.ConverterConfig.model
+
         for path in models_path_to_look:
+
             model_attrs = inspect(model)
 
             model_relationships = getattr(model_attrs, "relationships", None)
@@ -45,57 +50,105 @@ class SqlAlchemyFilterConverter:
             # If related model is None
             # we might come to field required filtering
             foreign_key_db_column = getattr(model, path, None)
-            return foreign_key_db_column
+            return model, foreign_key_db_column
 
-        return model
+        return model, None
 
-    @classmethod
-    def get_filters_binary_expressions(
-        cls,
-        model: tp.Type[DeclarativeMeta],
-        filters: tp.Dict[str, tp.Any],
-    ) -> tp.List[BinaryExpression]:
+    def _get_filter_binary_expression(
+        self,
+        field: str,
+        value: tp.Any,
+    ) -> tp.Tuple[DeclarativeMeta, BinaryExpression]:
         db_field = None
         sql_op = None
-        query_filters = []
+        foreign_key_model = None
+
+        if "__" in field:
+            # There might be several relationship
+            # that is why string might look like
+            # related_model1__related_model2__related_model2_field(?__op)
+            filter_params = field.split("__")
+
+            # Op should be always the last one
+            last_param = filter_params[-1]
+
+            sql_op = SQLALCHEMY_OP_MATCHER.get(last_param)
+
+            if sql_op == "isnull":
+                sql_op = (
+                    SQLALCHEMY_OP_MATCHER.get("is")
+                    if value
+                    else SQLALCHEMY_OP_MATCHER.get("is_not")
+                )
+                value = None
+
+            if sql_op:
+                filter_params = filter_params[:-1]
+
+            if len(filter_params) > 1:
+                foreign_key_model, db_field = self.get_foreign_key_filtered_column(
+                    models_path_to_look=filter_params,
+                )
+                if db_field is None:
+                    raise ValueError
+            else:
+                field = filter_params[0]
+
+        if db_field is None:
+            db_field = getattr(self.ConverterConfig.model, field)
+
+        if sql_op is None:
+            sql_op = self.DEFAULT_SQLALCHEMY_SQL_OP
+
+        model = foreign_key_model or self.ConverterConfig.model
+
+        return model, getattr(db_field, sql_op)(value)
+
+    def get_models_binary_expressions(
+        self,
+        filters: tp.Dict[str, tp.Any],
+    ) -> tp.List[tp.Dict[str, tp.Union[DeclarativeMeta, BinaryExpression]]]:
+        model_filters = []
 
         for field, value in filters.items():
-            if "__" in field:
-                # There might be several relationship
-                # that is why string might look like
-                # related_model1__related_model2__related_model2_field(?__op)
-                filter_params = field.split("__")
+            model, filter_binary_expression = self._get_filter_binary_expression(
+                field=field,
+                value=value,
+            )
+            model_filters.append(
+                {"model": model, "binary_expression": filter_binary_expression}
+            )
+        return model_filters
 
-                # Op should be always the last one
-                last_param = filter_params[-1]
+    def get_binary_expressions(
+        self,
+        filters: tp.Dict[str, tp.Any],
+    ):
+        return [
+            binary_expression["binary_expression"]
+            for binary_expression in self.get_models_binary_expressions(filters=filters)
+        ]
 
-                sql_op = SQLALCHEMY_OP_MATCHER.get(last_param)
+    def join_models(
+        self, query: tp.Union[Select, Query], models: tp.List[DeclarativeMeta]
+    ):
+        query = query
 
-                if sql_op == "isnull":
-                    sql_op = (
-                        SQLALCHEMY_OP_MATCHER.get("is")
-                        if value
-                        else SQLALCHEMY_OP_MATCHER.get("is_not")
-                    )
-                    value = None
+        joined_models = []
+        join_methods = [
+            "_join_entities",  # sqlalchemy <= 1.3
+            "_legacy_setup_joins",  # sqlalchemy == 1.4
+            "_setup_joins",  # sqlalchemy == 2.0
+        ]
+        for join_method in join_methods:
+            if hasattr(query, join_method):
+                joined_models = [
+                    join[0].entity_namespace for join in getattr(query, join_method)
+                ]
+                break
 
-                if sql_op:
-                    filter_params = filter_params[:-1]
+        for model in models:
+            if model != self.ConverterConfig.model and model not in joined_models:
+                query = query.join(model)
 
-                if len(filter_params) > 1:
-                    db_field = cls.get_foreign_key_filtered_column(
-                        model=model,
-                        models_path_to_look=filter_params,
-                    )
-                    if db_field is None:
-                        raise ValueError
-                else:
-                    field = filter_params[0]
-
-            if db_field is None:
-                db_field = getattr(model, field)
-
-            if sql_op is None:
-                sql_op = cls.DEFAULT_SQLALCHEMY_SQL_OP
-            query_filters.append(getattr(db_field, sql_op)(value))
-        return query_filters
+        return query

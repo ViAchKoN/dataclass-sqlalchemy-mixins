@@ -43,7 +43,11 @@ def test_filter__eq__ok(
         query = filters_model.apply_filters(query=query)
         results = db_session.execute(query).scalars().all()
     else:
-        results = db_session.query(models.Item).filter(*filters_model.to_sql()).all()
+        results = (
+            db_session.query(models.Item)
+            .filter(*filters_model.to_binary_expressions())
+            .all()
+        )
 
     assert len(results) == 1
 
@@ -111,7 +115,9 @@ def test_filter__in_not_in__ok(
             results = db_session.execute(query).scalars().all()
         else:
             results = (
-                db_session.query(models.Item).filter(*filters_model.to_sql()).all()
+                db_session.query(models.Item)
+                .filter(*filters_model.to_binary_expressions())
+                .all()
             )
 
         assert len(results) == len(expected_items)
@@ -181,7 +187,9 @@ def test_filter__in_not_in__dates__ok(
             results = db_session.execute(query).scalars().all()
         else:
             results = (
-                db_session.query(models.Item).filter(*filters_model.to_sql()).all()
+                db_session.query(models.Item)
+                .filter(*filters_model.to_binary_expressions())
+                .all()
             )
 
         assert len(results) == len(expected_items)
@@ -231,7 +239,9 @@ def test_filter__gt_lt_gte_lte__ok(
             results = db_session.execute(query).scalars().all()
         else:
             results = (
-                db_session.query(models.Item).filter(*filters_model.to_sql()).all()
+                db_session.query(models.Item)
+                .filter(*filters_model.to_binary_expressions())
+                .all()
             )
 
         assert len(results) == len(expected_item_numbers)
@@ -285,7 +295,11 @@ def test_filter__not__ok(
         query = filters_model.apply_filters(query=query)
         results = db_session.execute(query).scalars().all()
     else:
-        results = db_session.query(models.Item).filter(*filters_model.to_sql()).all()
+        results = (
+            db_session.query(models.Item)
+            .filter(*filters_model.to_binary_expressions())
+            .all()
+        )
 
     assert len(results) == len(expected_item_names)
 
@@ -342,7 +356,9 @@ def test_filter__is_is_not__ok(
             results = db_session.execute(query).scalars().all()
         else:
             results = (
-                db_session.query(models.Item).filter(*filters_model.to_sql()).all()
+                db_session.query(models.Item)
+                .filter(*filters_model.to_binary_expressions())
+                .all()
             )
 
         assert len(results) == len(expected_items)
@@ -374,7 +390,11 @@ def test_filter__is_is_not__ok(
             },
         )
 
-        results = db_session.query(models.Item).filter(*filters_model.to_sql()).all()
+        results = (
+            db_session.query(models.Item)
+            .filter(*filters_model.to_binary_expressions())
+            .all()
+        )
 
         assert len(results) == len(expected_items)
 
@@ -433,7 +453,9 @@ def test_filter__like_ilike__ok(
             results = db_session.execute(query).scalars().all()
         else:
             results = (
-                db_session.query(models.Item).filter(*filters_model.to_sql()).all()
+                db_session.query(models.Item)
+                .filter(*filters_model.to_binary_expressions())
+                .all()
             )
 
         assert len(results) == len(expected_items)

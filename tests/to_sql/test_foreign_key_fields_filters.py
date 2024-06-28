@@ -1,11 +1,31 @@
 import datetime as dt
 
+import pytest
+from sqlalchemy import select
+
 from tests import models, models_factory
 
 
+@pytest.mark.parametrize(
+    "query_type",
+    [
+        "select",
+        "query",
+        None,
+    ],
+)
+@pytest.mark.parametrize(
+    "joined",
+    [
+        True,
+        False,
+    ],
+)
 def test_filter__eq__ok(
     db_session,
     get_sqlalchemy_filters_model,
+    query_type,
+    joined,
 ):
     # Create expected group and item
     expected_group_name = "expected_group_name"
@@ -34,12 +54,28 @@ def test_filter__eq__ok(
         },
     )
 
-    results = (
-        db_session.query(models.Item)
-        .join(models.Group)
-        .filter(*filters_model.to_sql())
-        .all()
-    )
+    if query_type == "select":
+        query = select(models.Item)
+
+        if joined:
+            query = query.join(models.Group)
+
+        query = filters_model.apply_filters(query=query)
+        results = db_session.execute(query).scalars().all()
+    elif query_type == "query":
+        query = db_session.query(models.Item)
+
+        if joined:
+            query = query.join(models.Group)
+
+        query = filters_model.apply_filters(query=query)
+        results = query.all()
+    else:
+        query = db_session.query(models.Item).join(models.Group)
+
+        query = query.filter(*filters_model.to_binary_expressions())
+
+        results = query.all()
 
     assert len(results) == 1
 
@@ -48,9 +84,26 @@ def test_filter__eq__ok(
     assert result.as_dict() == expected_item.as_dict()
 
 
+@pytest.mark.parametrize(
+    "query_type",
+    [
+        "select",
+        "query",
+        None,
+    ],
+)
+@pytest.mark.parametrize(
+    "joined",
+    [
+        True,
+        False,
+    ],
+)
 def test_filter__in_not_in__ok(
     db_session,
     get_sqlalchemy_filters_model,
+    query_type,
+    joined,
 ):
     first_group_name = "first_group_name"
 
@@ -110,12 +163,28 @@ def test_filter__in_not_in__ok(
             },
         )
 
-        results = (
-            db_session.query(models.Item)
-            .join(models.Group)
-            .filter(*filters_model.to_sql())
-            .all()
-        )
+        if query_type == "select":
+            query = select(models.Item)
+
+            if joined:
+                query = query.join(models.Group)
+
+            query = filters_model.apply_filters(query=query)
+            results = db_session.execute(query).scalars().all()
+        elif query_type == "query":
+            query = db_session.query(models.Item)
+
+            if joined:
+                query = query.join(models.Group)
+
+            query = filters_model.apply_filters(query=query)
+            results = query.all()
+        else:
+            query = db_session.query(models.Item).join(models.Group)
+
+            query = query.filter(*filters_model.to_binary_expressions())
+
+            results = query.all()
 
         assert len(results) == len(expected_items)
 
@@ -123,9 +192,26 @@ def test_filter__in_not_in__ok(
             assert result.as_dict() == expected_item.as_dict()
 
 
+@pytest.mark.parametrize(
+    "query_type",
+    [
+        "select",
+        "query",
+        None,
+    ],
+)
+@pytest.mark.parametrize(
+    "joined",
+    [
+        True,
+        False,
+    ],
+)
 def test_filter__in_not_in__dates__ok(
     db_session,
     get_sqlalchemy_filters_model,
+    query_type,
+    joined,
 ):
     now = dt.datetime.now()
 
@@ -183,12 +269,28 @@ def test_filter__in_not_in__dates__ok(
             },
         )
 
-        results = (
-            db_session.query(models.Item)
-            .join(models.Group)
-            .filter(*filters_model.to_sql())
-            .all()
-        )
+        if query_type == "select":
+            query = select(models.Item)
+
+            if joined:
+                query = query.join(models.Group)
+
+            query = filters_model.apply_filters(query=query)
+            results = db_session.execute(query).scalars().all()
+        elif query_type == "query":
+            query = db_session.query(models.Item)
+
+            if joined:
+                query = query.join(models.Group)
+
+            query = filters_model.apply_filters(query=query)
+            results = query.all()
+        else:
+            query = db_session.query(models.Item).join(models.Group)
+
+            query = query.filter(*filters_model.to_binary_expressions())
+
+            results = query.all()
 
         assert len(results) == len(expected_items)
 
@@ -196,9 +298,26 @@ def test_filter__in_not_in__dates__ok(
             assert result.as_dict() == expected_item.as_dict()
 
 
+@pytest.mark.parametrize(
+    "query_type",
+    [
+        "select",
+        "query",
+        None,
+    ],
+)
+@pytest.mark.parametrize(
+    "joined",
+    [
+        True,
+        False,
+    ],
+)
 def test_filter__gt_lt_gte_lte__date__ok(
     db_session,
     get_sqlalchemy_filters_model,
+    query_type,
+    joined,
 ):
     now = dt.datetime.now()
 
@@ -254,12 +373,28 @@ def test_filter__gt_lt_gte_lte__date__ok(
             },
         )
 
-        results = (
-            db_session.query(models.Item)
-            .join(models.Group)
-            .filter(*filters_model.to_sql())
-            .all()
-        )
+        if query_type == "select":
+            query = select(models.Item)
+
+            if joined:
+                query = query.join(models.Group)
+
+            query = filters_model.apply_filters(query=query)
+            results = db_session.execute(query).scalars().all()
+        elif query_type == "query":
+            query = db_session.query(models.Item)
+
+            if joined:
+                query = query.join(models.Group)
+
+            query = filters_model.apply_filters(query=query)
+            results = query.all()
+        else:
+            query = db_session.query(models.Item).join(models.Group)
+
+            query = query.filter(*filters_model.to_binary_expressions())
+
+            results = query.all()
 
         assert len(results) == len(expected_items)
 
@@ -267,9 +402,26 @@ def test_filter__gt_lt_gte_lte__date__ok(
             assert result.as_dict() == expected_item.as_dict()
 
 
+@pytest.mark.parametrize(
+    "query_type",
+    [
+        "select",
+        "query",
+        None,
+    ],
+)
+@pytest.mark.parametrize(
+    "joined",
+    [
+        True,
+        False,
+    ],
+)
 def test_filter__not__ok(
     db_session,
     get_sqlalchemy_filters_model,
+    query_type,
+    joined,
 ):
     first_group_name = "first_group_name"
 
@@ -322,12 +474,28 @@ def test_filter__not__ok(
             },
         )
 
-        results = (
-            db_session.query(models.Item)
-            .join(models.Group)
-            .filter(*filters_model.to_sql())
-            .all()
-        )
+        if query_type == "select":
+            query = select(models.Item)
+
+            if joined:
+                query = query.join(models.Group)
+
+            query = filters_model.apply_filters(query=query)
+            results = db_session.execute(query).scalars().all()
+        elif query_type == "query":
+            query = db_session.query(models.Item)
+
+            if joined:
+                query = query.join(models.Group)
+
+            query = filters_model.apply_filters(query=query)
+            results = query.all()
+        else:
+            query = db_session.query(models.Item).join(models.Group)
+
+            query = query.filter(*filters_model.to_binary_expressions())
+
+            results = query.all()
 
         assert len(results) == len(expected_items)
 
@@ -335,9 +503,26 @@ def test_filter__not__ok(
             assert result.as_dict() == expected_item.as_dict()
 
 
+@pytest.mark.parametrize(
+    "query_type",
+    [
+        "select",
+        "query",
+        None,
+    ],
+)
+@pytest.mark.parametrize(
+    "joined",
+    [
+        True,
+        False,
+    ],
+)
 def test_filter__is_is_not__ok(
     db_session,
     get_sqlalchemy_filters_model,
+    query_type,
+    joined,
 ):
     active_group = models_factory.GroupFactory.create(is_active=True, with_item=True)
     first_item = (
@@ -373,12 +558,28 @@ def test_filter__is_is_not__ok(
             },
         )
 
-        results = (
-            db_session.query(models.Item)
-            .join(models.Group)
-            .filter(*filters_model.to_sql())
-            .all()
-        )
+        if query_type == "select":
+            query = select(models.Item)
+
+            if joined:
+                query = query.join(models.Group)
+
+            query = filters_model.apply_filters(query=query)
+            results = db_session.execute(query).scalars().all()
+        elif query_type == "query":
+            query = db_session.query(models.Item)
+
+            if joined:
+                query = query.join(models.Group)
+
+            query = filters_model.apply_filters(query=query)
+            results = query.all()
+        else:
+            query = db_session.query(models.Item).join(models.Group)
+
+            query = query.filter(*filters_model.to_binary_expressions())
+
+            results = query.all()
 
         assert len(results) == len(expected_items)
 
@@ -386,9 +587,26 @@ def test_filter__is_is_not__ok(
             assert result.as_dict() == expected_item.as_dict()
 
 
+@pytest.mark.parametrize(
+    "query_type",
+    [
+        "select",
+        "query",
+        None,
+    ],
+)
+@pytest.mark.parametrize(
+    "joined",
+    [
+        True,
+        False,
+    ],
+)
 def test_filter__like_ilike__ok(
     db_session,
     get_sqlalchemy_filters_model,
+    query_type,
+    joined,
 ):
     first_group = models_factory.GroupFactory.create(name="first name", with_item=True)
     first_item = (
@@ -434,12 +652,28 @@ def test_filter__like_ilike__ok(
             },
         )
 
-        results = (
-            db_session.query(models.Item)
-            .join(models.Group)
-            .filter(*filters_model.to_sql())
-            .all()
-        )
+        if query_type == "select":
+            query = select(models.Item)
+
+            if joined:
+                query = query.join(models.Group)
+
+            query = filters_model.apply_filters(query=query)
+            results = db_session.execute(query).scalars().all()
+        elif query_type == "query":
+            query = db_session.query(models.Item)
+
+            if joined:
+                query = query.join(models.Group)
+
+            query = filters_model.apply_filters(query=query)
+            results = query.all()
+        else:
+            query = db_session.query(models.Item).join(models.Group)
+
+            query = query.filter(*filters_model.to_binary_expressions())
+
+            results = query.all()
 
         assert len(results) == len(expected_items)
 
