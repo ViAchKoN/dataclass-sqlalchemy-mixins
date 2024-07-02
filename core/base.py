@@ -30,8 +30,12 @@ class SqlAlchemyFilterConverterMixin:
     def get_foreign_key_filtered_column(
         self,
         models_path_to_look: tp.List[str],
-    ) -> tp.Tuple[DeclarativeMeta, tp.Union[None, InstrumentedAttribute]]:
+    ) -> tp.Tuple[tp.List[DeclarativeMeta], tp.Union[None, InstrumentedAttribute]]:
         model = self.ConverterConfig.model
+
+        # There might more than one relationship
+        # so we need to save a path to the target model
+        models = []
 
         for path in models_path_to_look:
 
@@ -45,23 +49,24 @@ class SqlAlchemyFilterConverterMixin:
                 if related_model:
                     # Updating original model to continue search
                     model = related_model.argument
+                    models.append(model)
                     continue
 
             # If related model is None
             # we might come to field required filtering
             foreign_key_db_column = getattr(model, path, None)
-            return model, foreign_key_db_column
+            return models, foreign_key_db_column
 
-        return model, None
+        return models, None
 
     def _get_filter_binary_expression(
         self,
         field: str,
         value: tp.Any,
-    ) -> tp.Tuple[DeclarativeMeta, BinaryExpression]:
+    ) -> tp.Tuple[tp.List[DeclarativeMeta], BinaryExpression]:
         db_field = None
         sql_op = None
-        foreign_key_model = None
+        models = []
 
         if "__" in field:
             # There might be several relationship
@@ -86,7 +91,7 @@ class SqlAlchemyFilterConverterMixin:
                 filter_params = filter_params[:-1]
 
             if len(filter_params) > 1:
-                foreign_key_model, db_field = self.get_foreign_key_filtered_column(
+                models, db_field = self.get_foreign_key_filtered_column(
                     models_path_to_look=filter_params,
                 )
                 if db_field is None:
@@ -100,9 +105,11 @@ class SqlAlchemyFilterConverterMixin:
         if sql_op is None:
             sql_op = self.DEFAULT_SQLALCHEMY_SQL_OP
 
-        model = foreign_key_model or self.ConverterConfig.model
+        models = models or [
+            self.ConverterConfig.model,
+        ]
 
-        return model, getattr(db_field, sql_op)(value)
+        return models, getattr(db_field, sql_op)(value)
 
     def get_models_binary_expressions(
         self,
@@ -111,12 +118,15 @@ class SqlAlchemyFilterConverterMixin:
         model_filters = []
 
         for field, value in filters.items():
-            model, filter_binary_expression = self._get_filter_binary_expression(
+            models, filter_binary_expression = self._get_filter_binary_expression(
                 field=field,
                 value=value,
             )
             model_filters.append(
-                {"model": model, "binary_expression": filter_binary_expression}
+                {
+                    "models": models,
+                    "binary_expression": filter_binary_expression,
+                }
             )
         return model_filters
 
