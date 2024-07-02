@@ -7,18 +7,13 @@ from tests import models, models_factory
 
 
 @pytest.mark.parametrize(
-    "query_type",
+    ("query_type", "joined"),
     [
-        "select",
-        "query",
-        None,
-    ],
-)
-@pytest.mark.parametrize(
-    "joined",
-    [
-        # True,
-        False,
+        ("select", True),
+        ("select", False),
+        ("query", True),
+        ("query", False),
+        (None, None),
     ],
 )
 def test_filter__eq__ok(
@@ -89,18 +84,13 @@ def test_filter__eq__ok(
 
 
 @pytest.mark.parametrize(
-    "query_type",
+    ("query_type", "joined"),
     [
-        "select",
-        "query",
-        None,
-    ],
-)
-@pytest.mark.parametrize(
-    "joined",
-    [
-        True,
-        False,
+        ("select", True),
+        ("select", False),
+        ("query", True),
+        ("query", False),
+        (None, None),
     ],
 )
 def test_filter__in_not_in__ok(
@@ -209,18 +199,13 @@ def test_filter__in_not_in__ok(
 
 
 @pytest.mark.parametrize(
-    "query_type",
+    ("query_type", "joined"),
     [
-        "select",
-        "query",
-        None,
-    ],
-)
-@pytest.mark.parametrize(
-    "joined",
-    [
-        True,
-        False,
+        ("select", True),
+        ("select", False),
+        ("query", True),
+        ("query", False),
+        (None, None),
     ],
 )
 def test_filter__in_not_in__dates__ok(
@@ -327,18 +312,13 @@ def test_filter__in_not_in__dates__ok(
 
 
 @pytest.mark.parametrize(
-    "query_type",
+    ("query_type", "joined"),
     [
-        "select",
-        "query",
-        None,
-    ],
-)
-@pytest.mark.parametrize(
-    "joined",
-    [
-        True,
-        False,
+        ("select", True),
+        ("select", False),
+        ("query", True),
+        ("query", False),
+        (None, None),
     ],
 )
 def test_filter__gt_lt_gte_lte__date__ok(
@@ -439,18 +419,13 @@ def test_filter__gt_lt_gte_lte__date__ok(
 
 
 @pytest.mark.parametrize(
-    "query_type",
+    ("query_type", "joined"),
     [
-        "select",
-        "query",
-        None,
-    ],
-)
-@pytest.mark.parametrize(
-    "joined",
-    [
-        True,
-        False,
+        ("select", True),
+        ("select", False),
+        ("query", True),
+        ("query", False),
+        (None, None),
     ],
 )
 def test_filter__not__ok(
@@ -548,18 +523,13 @@ def test_filter__not__ok(
 
 
 @pytest.mark.parametrize(
-    "query_type",
+    ("query_type", "joined"),
     [
-        "select",
-        "query",
-        None,
-    ],
-)
-@pytest.mark.parametrize(
-    "joined",
-    [
-        True,
-        False,
+        ("select", True),
+        ("select", False),
+        ("query", True),
+        ("query", False),
+        (None, None),
     ],
 )
 def test_filter__is_null_is_not_null__ok(
@@ -642,18 +612,13 @@ def test_filter__is_null_is_not_null__ok(
 
 
 @pytest.mark.parametrize(
-    "query_type",
+    ("query_type", "joined"),
     [
-        "select",
-        "query",
-        None,
-    ],
-)
-@pytest.mark.parametrize(
-    "joined",
-    [
-        True,
-        False,
+        ("select", True),
+        ("select", False),
+        ("query", True),
+        ("query", False),
+        (None, None),
     ],
 )
 def test_filter__like_ilike__ok(
