@@ -4,10 +4,10 @@ from pydantic import BaseModel
 from sqlalchemy import BinaryExpression, Select
 from sqlalchemy.orm import Query
 
-from core.base import SqlAlchemyFilterConverterMixin
+from core.base.mixins import SqlAlchemyFilterConverterMixin
 
 
-class SqlAlchemyFiltersModel(BaseModel, SqlAlchemyFilterConverterMixin):
+class SqlAlchemyFiltersBaseModel(BaseModel, SqlAlchemyFilterConverterMixin):
     def __init__(self, *args, **kwargs):
         super().__init__(**kwargs)
         if self.ConverterConfig.model is None:
@@ -45,8 +45,3 @@ class SqlAlchemyFiltersModel(BaseModel, SqlAlchemyFilterConverterMixin):
 
         query = query.filter(*binary_expressions)
         return query
-
-
-class SqlAlchemyOrderingsMixin:
-    def to_sql(self):
-        pass

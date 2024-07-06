@@ -15,7 +15,7 @@ from tests import models, models_factory
 )
 def test_filter__eq__ok(
     db_session,
-    get_sqlalchemy_filters_model,
+    get_sqlalchemy_filters_base_model,
     apply_filters,
 ):
     expected_item_name = "expected_item_name"
@@ -26,7 +26,7 @@ def test_filter__eq__ok(
     # Create unexpected items
     models_factory.ItemFactory.create_batch(size=4)
 
-    filters_model = get_sqlalchemy_filters_model(
+    filters_model = get_sqlalchemy_filters_base_model(
         base_model=models.Item,
         field_kwargs={
             "name": (str, ...),
@@ -65,7 +65,7 @@ def test_filter__eq__ok(
 )
 def test_filter__in_not_in__ok(
     db_session,
-    get_sqlalchemy_filters_model,
+    get_sqlalchemy_filters_base_model,
     apply_filters,
 ):
     first_number = 1
@@ -99,7 +99,7 @@ def test_filter__in_not_in__ok(
         ("number__in", [fourth_item, fifth_item]),
         ("number__not_in", [first_item, second_item, third_item]),
     ):
-        filters_model = get_sqlalchemy_filters_model(
+        filters_model = get_sqlalchemy_filters_base_model(
             base_model=models.Item,
             field_kwargs={
                 field: (list[int], ...),
@@ -135,7 +135,7 @@ def test_filter__in_not_in__ok(
 )
 def test_filter__in_not_in__dates__ok(
     db_session,
-    get_sqlalchemy_filters_model,
+    get_sqlalchemy_filters_base_model,
     apply_filters,
 ):
     now = dt.datetime.now()
@@ -171,7 +171,7 @@ def test_filter__in_not_in__dates__ok(
         ("created_at__in", [fourth_item, fifth_item]),
         ("created_at__not_in", [first_item, second_item, third_item]),
     ):
-        filters_model = get_sqlalchemy_filters_model(
+        filters_model = get_sqlalchemy_filters_base_model(
             base_model=models.Item,
             field_kwargs={
                 field: (list[dt.datetime], ...),
@@ -207,7 +207,7 @@ def test_filter__in_not_in__dates__ok(
 )
 def test_filter__gt_lt_gte_lte__ok(
     db_session,
-    get_sqlalchemy_filters_model,
+    get_sqlalchemy_filters_base_model,
     apply_filters,
 ):
     for i in range(1, 6):
@@ -223,7 +223,7 @@ def test_filter__gt_lt_gte_lte__ok(
         ("number__gte", [3, 4, 5]),
         ("number__lte", [1, 2, 3]),
     ):
-        filters_model = get_sqlalchemy_filters_model(
+        filters_model = get_sqlalchemy_filters_base_model(
             base_model=models.Item,
             field_kwargs={
                 field: (int, ...),
@@ -259,7 +259,7 @@ def test_filter__gt_lt_gte_lte__ok(
 )
 def test_filter__not__ok(
     db_session,
-    get_sqlalchemy_filters_model,
+    get_sqlalchemy_filters_base_model,
     apply_filters,
 ):
     expected_item_names = [
@@ -278,7 +278,7 @@ def test_filter__not__ok(
             )
         )
 
-    filters_model = get_sqlalchemy_filters_model(
+    filters_model = get_sqlalchemy_filters_base_model(
         base_model=models.Item,
         field_kwargs={
             "name__not": (str, ...),
@@ -316,7 +316,7 @@ def test_filter__not__ok(
 )
 def test_filter__is_is_not__ok(
     db_session,
-    get_sqlalchemy_filters_model,
+    get_sqlalchemy_filters_base_model,
     apply_filters,
 ):
     valid_item = models_factory.ItemFactory.create(
@@ -340,7 +340,7 @@ def test_filter__is_is_not__ok(
             ],
         ),
     ):
-        filters_model = get_sqlalchemy_filters_model(
+        filters_model = get_sqlalchemy_filters_base_model(
             base_model=models.Item,
             field_kwargs={
                 "is_valid__is": (bool, ...),
@@ -380,7 +380,7 @@ def test_filter__is_is_not__ok(
             ],
         ),
     ):
-        filters_model = get_sqlalchemy_filters_model(
+        filters_model = get_sqlalchemy_filters_base_model(
             base_model=models.Item,
             field_kwargs={
                 "is_valid__is_not": (bool, ...),
@@ -411,7 +411,7 @@ def test_filter__is_is_not__ok(
 )
 def test_filter__like_ilike__ok(
     db_session,
-    get_sqlalchemy_filters_model,
+    get_sqlalchemy_filters_base_model,
     apply_filters,
 ):
     first_item = models_factory.ItemFactory.create(
@@ -437,7 +437,7 @@ def test_filter__like_ilike__ok(
             ],
         ),
     ):
-        filters_model = get_sqlalchemy_filters_model(
+        filters_model = get_sqlalchemy_filters_base_model(
             base_model=models.Item,
             field_kwargs={
                 field: (str, ...),

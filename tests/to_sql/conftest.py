@@ -4,17 +4,17 @@ import pytest
 from pydantic.fields import FieldInfo
 from sqlalchemy.orm import DeclarativeBase
 
-from core.sqlalchemy_base_models import SqlAlchemyFiltersModel
+from core.pydantic.sqlalchemy_base_models import SqlAlchemyFiltersBaseModel
 
 
 @pytest.fixture
-def get_sqlalchemy_filters_model():
-    def sqlalchemy_filters_model(
+def get_sqlalchemy_filters_base_model():
+    def sqlalchemy_filters_base_model(
         base_model: tp.Type[DeclarativeBase],
         field_kwargs: tp.Dict[type, tp.Any],
         model_kwargs: tp.Dict[str, tp.Any],
     ):
-        class CustomSqlAlchemyFiltersModel(SqlAlchemyFiltersModel):
+        class CustomSqlAlchemyFiltersModel(SqlAlchemyFiltersBaseModel):
             class ConverterConfig:
                 model = base_model
 
@@ -54,4 +54,4 @@ def get_sqlalchemy_filters_model():
             setattr(custom_sqlalchemy_filters_model, key, value)
         return custom_sqlalchemy_filters_model
 
-    return sqlalchemy_filters_model
+    return sqlalchemy_filters_base_model
