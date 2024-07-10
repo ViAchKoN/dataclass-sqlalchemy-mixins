@@ -1,7 +1,7 @@
 import typing as tp
 
-from sqlalchemy import BinaryExpression, Select, inspect
-from sqlalchemy.orm import DeclarativeMeta, InstrumentedAttribute, Query
+from sqlalchemy import inspect
+from sqlalchemy.orm import DeclarativeMeta, InstrumentedAttribute
 
 
 SQLALCHEMY_OP_MATCHER = {
@@ -63,7 +63,7 @@ class SqlAlchemyFilterConverterMixin:
         self,
         field: str,
         value: tp.Any,
-    ) -> tp.Tuple[tp.List[DeclarativeMeta], BinaryExpression]:
+    ):
         db_field = None
         sql_op = None
         models = []
@@ -114,7 +114,7 @@ class SqlAlchemyFilterConverterMixin:
     def get_models_binary_expressions(
         self,
         filters: tp.Dict[str, tp.Any],
-    ) -> tp.List[tp.Dict[str, tp.Union[DeclarativeMeta, BinaryExpression]]]:
+    ):
         model_filters = []
 
         for field, value in filters.items():
@@ -139,9 +139,7 @@ class SqlAlchemyFilterConverterMixin:
             for binary_expression in self.get_models_binary_expressions(filters=filters)
         ]
 
-    def join_models(
-        self, query: tp.Union[Select, Query], models: tp.List[DeclarativeMeta]
-    ):
+    def join_models(self, query, models: tp.List[DeclarativeMeta]):
         query = query
 
         joined_models = []
@@ -155,7 +153,10 @@ class SqlAlchemyFilterConverterMixin:
                 joined_models = [
                     join[0].entity_namespace for join in getattr(query, join_method)
                 ]
-                break
+                # Different sqlalchemy versions might have several join methods
+                # but only one of them will return correct joined models list
+                if joined_models:
+                    break
 
         for model in models:
             if model != self.ConverterConfig.model and model not in joined_models:

@@ -2,7 +2,6 @@ import typing as tp
 
 import pytest
 from pydantic.fields import FieldInfo
-from sqlalchemy.orm import DeclarativeBase
 
 from core.pydantic.sqlalchemy_base_models import SqlAlchemyFiltersBaseModel
 
@@ -10,7 +9,7 @@ from core.pydantic.sqlalchemy_base_models import SqlAlchemyFiltersBaseModel
 @pytest.fixture
 def get_sqlalchemy_filters_base_model():
     def sqlalchemy_filters_base_model(
-        base_model: tp.Type[DeclarativeBase],
+        base_model,
         field_kwargs: tp.Dict[type, tp.Any],
         model_kwargs: tp.Dict[str, tp.Any],
     ):

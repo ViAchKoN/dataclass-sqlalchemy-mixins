@@ -1,8 +1,4 @@
-import typing as tp
-
 from pydantic import BaseModel
-from sqlalchemy import BinaryExpression, Select
-from sqlalchemy.orm import Query
 
 from core.base.mixins import SqlAlchemyFilterConverterMixin
 
@@ -13,7 +9,7 @@ class SqlAlchemyFiltersBaseModel(BaseModel, SqlAlchemyFilterConverterMixin):
         if self.ConverterConfig.model is None:
             raise ValueError("ConverterConfig param 'model' can't be None")
 
-    def to_binary_expressions(self) -> tp.List[BinaryExpression]:
+    def to_binary_expressions(self):
         filters = self.dict(exclude_none=True)
 
         return self.get_binary_expressions(
@@ -22,8 +18,8 @@ class SqlAlchemyFiltersBaseModel(BaseModel, SqlAlchemyFilterConverterMixin):
 
     def apply_filters(
         self,
-        query: tp.Union[Select, Query],
-    ) -> tp.Union[Select, Query]:
+        query,
+    ):
         filters = self.dict(exclude_none=True)
 
         filters_binary_expressions = self.get_models_binary_expressions(
