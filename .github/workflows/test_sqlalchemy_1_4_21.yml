@@ -1,4 +1,4 @@
-name: "Test"
+name: "Test sqlalchemy 1.4.21"
 
 on:
   pull_request:
@@ -63,6 +63,9 @@ jobs:
       - name: Install dependencies
         if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
         run: poetry install --no-interaction
+
+      - name: Install sqlalchemy 1.4.52
+        run: poetry run pip install sqlalchemy==1.4.52
 
       - name: Run tests
         run: poetry run pytest  --cov-report=xml
