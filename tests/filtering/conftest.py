@@ -1,9 +1,21 @@
 import typing as tp
 
+import pydantic
 import pytest
-from pydantic.fields import FieldInfo
 
 from core.pydantic.sqlalchemy_base_models import SqlAlchemyFilterBaseModel
+
+
+pydantic_version = int(pydantic.__version__[0])
+
+if pydantic_version < 2:
+    from pydantic.fields import ModelField
+
+    field_class = ModelField
+else:
+    from pydantic.fields import FieldInfo
+
+    field_class = FieldInfo
 
 
 @pytest.fixture
@@ -19,7 +31,7 @@ def get_sqlalchemy_filter_base_model():
 
             @classmethod
             def add_fields(cls, **field_definitions: tp.Any):
-                new_fields: tp.Dict[str, FieldInfo] = {}
+                new_fields: tp.Dict[str, tp.Union["FieldInfo", "ModelField"]] = {}
                 new_annotations: tp.Dict[str, tp.Optional[type]] = {}
 
                 for f_name, f_def in field_definitions.items():
@@ -38,10 +50,27 @@ def get_sqlalchemy_filter_base_model():
                     if f_annotation:
                         new_annotations[f_name] = f_annotation
 
-                    new_fields[f_name] = FieldInfo(annotation=f_annotation)
+                    # pydantic v1
+                    if pydantic_version < 2:
+                        new_fields[f_name] = field_class.infer(
+                            name=f_name,
+                            value=f_value,
+                            annotation=f_annotation,
+                            class_validators=None,
+                            config=cls.__config__,
+                        )
+                    # pydantic v2
+                    else:
+                        new_fields[f_name] = field_class(annotation=f_annotation)
 
-                cls.model_fields.update(new_fields)
-                cls.model_rebuild(force=True)
+                # pydantic v1
+                if pydantic_version < 2:
+                    cls.__fields__.update(new_fields)
+                    cls.__annotations__ = new_annotations
+                # pydantic v2
+                else:
+                    cls.model_fields.update(new_fields)
+                    cls.model_rebuild(force=True)
 
         custom_sqlalchemy_filters_model = CustomSqlAlchemyFilterModel()
 
