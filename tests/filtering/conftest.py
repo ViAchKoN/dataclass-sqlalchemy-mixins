@@ -3,17 +3,17 @@ import typing as tp
 import pytest
 from pydantic.fields import FieldInfo
 
-from core.pydantic.sqlalchemy_base_models import SqlAlchemyFiltersBaseModel
+from core.pydantic.sqlalchemy_base_models import SqlAlchemyFilterBaseModel
 
 
 @pytest.fixture
-def get_sqlalchemy_filters_base_model():
-    def sqlalchemy_filters_base_model(
+def get_sqlalchemy_filter_base_model():
+    def sqlalchemy_filter_base_model(
         base_model,
         field_kwargs: tp.Dict[type, tp.Any],
         model_kwargs: tp.Dict[str, tp.Any],
     ):
-        class CustomSqlAlchemyFiltersModel(SqlAlchemyFiltersBaseModel):
+        class CustomSqlAlchemyFilterModel(SqlAlchemyFilterBaseModel):
             class ConverterConfig:
                 model = base_model
 
@@ -43,7 +43,7 @@ def get_sqlalchemy_filters_base_model():
                 cls.model_fields.update(new_fields)
                 cls.model_rebuild(force=True)
 
-        custom_sqlalchemy_filters_model = CustomSqlAlchemyFiltersModel()
+        custom_sqlalchemy_filters_model = CustomSqlAlchemyFilterModel()
 
         custom_sqlalchemy_filters_model.add_fields(
             **field_kwargs,
@@ -53,4 +53,4 @@ def get_sqlalchemy_filters_base_model():
             setattr(custom_sqlalchemy_filters_model, key, value)
         return custom_sqlalchemy_filters_model
 
-    return sqlalchemy_filters_base_model
+    return sqlalchemy_filter_base_model

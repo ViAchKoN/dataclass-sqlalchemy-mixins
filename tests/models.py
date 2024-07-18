@@ -16,7 +16,7 @@ class BaseModel:
     created_at = sa.Column(
         sa.DateTime(),
         nullable=False,
-        default=dt.datetime.now(),
+        default=dt.datetime.now,
     )
 
     def as_dict(self) -> tp.Dict[str, str]:

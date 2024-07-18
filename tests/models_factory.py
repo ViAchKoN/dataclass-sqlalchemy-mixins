@@ -27,6 +27,7 @@ class OwnerFactory(CustomSQLAlchemyModelFactory):
     first_name = factory.Faker("first_name")
     last_name = factory.Faker("last_name")
     email = factory.Faker("email")
+    created_at = factory.LazyFunction(lambda: dt.datetime.now())
 
 
 class GroupFactory(CustomSQLAlchemyModelFactory):
