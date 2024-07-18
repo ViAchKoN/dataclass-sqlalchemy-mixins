@@ -18,7 +18,7 @@ from tests import models, models_factory
 )
 def test_filter__eq__ok(
     db_session,
-    get_sqlalchemy_filters_base_model,
+    get_sqlalchemy_filter_base_model,
     query_type,
     joined,
 ):
@@ -39,7 +39,7 @@ def test_filter__eq__ok(
 
     assert db_session.query(models.Item).count() == 5
 
-    filters_model = get_sqlalchemy_filters_base_model(
+    filters_model = get_sqlalchemy_filter_base_model(
         base_model=models.Item,
         field_kwargs={
             "group__name": (str, ...),
@@ -91,7 +91,7 @@ def test_filter__eq__ok(
 )
 def test_filter__in_not_in__ok(
     db_session,
-    get_sqlalchemy_filters_base_model,
+    get_sqlalchemy_filter_base_model,
     query_type,
     joined,
 ):
@@ -143,7 +143,7 @@ def test_filter__in_not_in__ok(
             ],
         ),
     ):
-        filters_model = get_sqlalchemy_filters_base_model(
+        filters_model = get_sqlalchemy_filter_base_model(
             base_model=models.Item,
             field_kwargs={
                 field: (list[str], ...),
@@ -194,7 +194,7 @@ def test_filter__in_not_in__ok(
 )
 def test_filter__in_not_in__dates__ok(
     db_session,
-    get_sqlalchemy_filters_base_model,
+    get_sqlalchemy_filter_base_model,
     query_type,
     joined,
 ):
@@ -244,7 +244,7 @@ def test_filter__in_not_in__dates__ok(
             ],
         ),
     ):
-        filters_model = get_sqlalchemy_filters_base_model(
+        filters_model = get_sqlalchemy_filter_base_model(
             base_model=models.Item,
             field_kwargs={
                 field: (list[dt.datetime], ...),
@@ -295,7 +295,7 @@ def test_filter__in_not_in__dates__ok(
 )
 def test_filter__gt_lt_gte_lte__date__ok(
     db_session,
-    get_sqlalchemy_filters_base_model,
+    get_sqlalchemy_filter_base_model,
     query_type,
     joined,
 ):
@@ -343,7 +343,7 @@ def test_filter__gt_lt_gte_lte__date__ok(
             ],
         ),
     ):
-        filters_model = get_sqlalchemy_filters_base_model(
+        filters_model = get_sqlalchemy_filter_base_model(
             base_model=models.Item,
             field_kwargs={
                 field: (dt.datetime, ...),
@@ -394,7 +394,7 @@ def test_filter__gt_lt_gte_lte__date__ok(
 )
 def test_filter__not__ok(
     db_session,
-    get_sqlalchemy_filters_base_model,
+    get_sqlalchemy_filter_base_model,
     query_type,
     joined,
 ):
@@ -439,7 +439,7 @@ def test_filter__not__ok(
             ],
         ),
     ):
-        filters_model = get_sqlalchemy_filters_base_model(
+        filters_model = get_sqlalchemy_filter_base_model(
             base_model=models.Item,
             field_kwargs={
                 field: (str, ...),
@@ -490,7 +490,7 @@ def test_filter__not__ok(
 )
 def test_filter__is_is_not__ok(
     db_session,
-    get_sqlalchemy_filters_base_model,
+    get_sqlalchemy_filter_base_model,
     query_type,
     joined,
 ):
@@ -518,7 +518,7 @@ def test_filter__is_is_not__ok(
             ],
         ),
     ):
-        filters_model = get_sqlalchemy_filters_base_model(
+        filters_model = get_sqlalchemy_filter_base_model(
             base_model=models.Item,
             field_kwargs={
                 field: (bool, ...),
@@ -569,7 +569,7 @@ def test_filter__is_is_not__ok(
 )
 def test_filter__like_ilike__ok(
     db_session,
-    get_sqlalchemy_filters_base_model,
+    get_sqlalchemy_filter_base_model,
     query_type,
     joined,
 ):
@@ -607,7 +607,7 @@ def test_filter__like_ilike__ok(
             ],
         ),
     ):
-        filters_model = get_sqlalchemy_filters_base_model(
+        filters_model = get_sqlalchemy_filter_base_model(
             base_model=models.Item,
             field_kwargs={
                 field: (str, ...),

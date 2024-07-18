@@ -1,14 +1,14 @@
 [tool.poetry]
-name = "dataclass-sqlalchemy-filters"
+name = "dataclass-sqlalchemy-mixins"
 version = "0.1.0"
-description = "Allows to convert pydantic dataclasses to sqlalchemy filters."
+description = "Allows to convert pydantic dataclasses to sqlalchemy filters and orderings."
 authors = ["ViAchKoN"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.9"
-pydantic = "^2.7.4"
-sqlalchemy = "^1.4.21"
+pydantic = "^2.0.0"
+sqlalchemy = "^1.4.0"
 
 [tool.poetry.group.dev.dependencies]
 fastapi = "^0.111.0"
