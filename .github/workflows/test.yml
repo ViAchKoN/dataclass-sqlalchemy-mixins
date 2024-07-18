@@ -19,6 +19,7 @@ jobs:
       matrix:
         python-version: ["3.9", "3.10", "3.11", "3.12"]
         sqlalchemy-version: ["1.4.52", "2.0.31"]
+        pydantic-version: ["1.9.0", "2.8.2"]
 
     services:
       postgres:
@@ -65,8 +66,11 @@ jobs:
         if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
         run: poetry install --no-interaction
 
-      - name: Install sqlalchemy 2.0.31
+      - name: Install sqlalchemy ${{ matrix.sqlalchemy-version }}
         run: poetry run pip install sqlalchemy==${{ matrix.sqlalchemy-version }}
+
+      - name: Install pydantic ${{ matrix.pydantic-version }}
+        run: poetry run pip install pydantic==${{ matrix.pydantic-version }}
 
       - name: Run tests
         run: poetry run pytest  --cov-report=xml
