@@ -12,7 +12,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  test:
+  test_sqlalchemy_2_0:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
