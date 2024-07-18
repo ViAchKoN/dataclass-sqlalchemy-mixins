@@ -1,4 +1,4 @@
-name: "Test sqlalchemy 2.0.31"
+name: "Test"
 
 on:
   pull_request:
@@ -12,12 +12,13 @@ on:
   workflow_dispatch:
 
 jobs:
-  test_sqlalchemy_2_0:
+  test:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
         python-version: ["3.9", "3.10", "3.11", "3.12"]
+        sqlalchemy-version: ["1.4.52", "2.0.31"]
 
     services:
       postgres:
@@ -65,7 +66,7 @@ jobs:
         run: poetry install --no-interaction
 
       - name: Install sqlalchemy 2.0.31
-        run: poetry run pip install sqlalchemy==2.0.31
+        run: poetry run pip install sqlalchemy==${{ matrix.sqlalchemy-version }}
 
       - name: Run tests
         run: poetry run pytest  --cov-report=xml
