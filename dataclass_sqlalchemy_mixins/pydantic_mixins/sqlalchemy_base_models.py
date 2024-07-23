@@ -1,21 +1,51 @@
+import enum
 import typing as tp
 
-from pydantic import BaseModel, Extra, Field
+from pydantic import BaseModel, Extra
 
-from core.base.mixins import (
+from dataclass_sqlalchemy_mixins.base.mixins import (
     SqlAlchemyFilterConverterMixin,
     SqlAlchemyOrderConverterMixin,
 )
 
 
-class SqlAlchemyFilterBaseModel(BaseModel, SqlAlchemyFilterConverterMixin):
+# We might need to use a custom logic for
+# pydantic_mixins models
+# for example fastapi not correctly supports
+# lists in query params set in base model
+# so we can set this fields in extra param in ConverterConfig
+class BaseModelConverterExtraParams(str, enum.Enum):
+    LIST_AS_STRING = (
+        "list_as_string"  # Deal with like a string with delimeter ',' when using dict()
+    )
+
+
+class SqlAlchemyFilterBaseModel(
+    BaseModel,
+    SqlAlchemyFilterConverterMixin,
+):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         if self.ConverterConfig.model is None:
             raise ValueError("ConverterConfig param 'model' can't be None")
 
+    def _to_dict(self, **kwargs):
+        dict_values = self.dict(**kwargs)
+
+        if hasattr(self.ConverterConfig, "extra"):
+            for key, value in self.ConverterConfig.extra.items():
+                if key == BaseModelConverterExtraParams.LIST_AS_STRING:
+                    fields = value.get("fields")
+                    if fields:
+                        for dict_key, dict_value in dict_values.items():
+                            if dict_key in fields:
+                                dict_values[dict_key] = list(
+                                    map(str.strip, dict_value.split(","))
+                                )
+        return dict_values
+
     def to_binary_expressions(self):
-        filters = self.dict(exclude_none=True)
+        filters = self._to_dict(exclude_none=True)
 
         return self.get_binary_expressions(
             filters=filters,
@@ -49,9 +79,7 @@ class SqlAlchemyFilterBaseModel(BaseModel, SqlAlchemyFilterConverterMixin):
 
 
 class SqlAlchemyOrderBaseModel(BaseModel, SqlAlchemyOrderConverterMixin):
-    order_by: tp.Union[str, tp.List[str]] = Field(
-        None, description="A list of fields or a field on which to order a query"
-    )
+    order_by: tp.Optional[tp.Union[str, tp.List[str]]] = None
 
     class Config:
         extra = Extra.forbid
@@ -60,6 +88,15 @@ class SqlAlchemyOrderBaseModel(BaseModel, SqlAlchemyOrderConverterMixin):
         super().__init__(**kwargs)
         if self.ConverterConfig.model is None:
             raise ValueError("ConverterConfig param 'model' can't be None")
+
+        self._split_list_to_str()
+
+    def _split_list_to_str(self):
+        order_by = self.order_by
+        if hasattr(self.ConverterConfig, "extra"):
+            for key, value in self.ConverterConfig.extra.items():
+                if key == BaseModelConverterExtraParams.LIST_AS_STRING:
+                    self.order_by = list(map(str.strip, order_by.split(",")))
 
     def to_unary_expressions(self):
         order_by = self.order_by

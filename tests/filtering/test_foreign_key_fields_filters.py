@@ -1,4 +1,5 @@
 import datetime as dt
+import typing as tp
 
 import pytest
 from sqlalchemy import select
@@ -146,7 +147,7 @@ def test_filter__in_not_in__ok(
         filters_model = get_sqlalchemy_filter_base_model(
             base_model=models.Item,
             field_kwargs={
-                field: (list[str], ...),
+                field: (tp.List[str], ...),
             },
             model_kwargs={
                 field: filter_values,
@@ -247,7 +248,7 @@ def test_filter__in_not_in__dates__ok(
         filters_model = get_sqlalchemy_filter_base_model(
             base_model=models.Item,
             field_kwargs={
-                field: (list[dt.datetime], ...),
+                field: (tp.List[dt.datetime], ...),
             },
             model_kwargs={
                 field: filter_values,

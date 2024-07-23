@@ -24,6 +24,7 @@ SQLALCHEMY_OP_MATCHER = {
 class SqlAlchemyBaseConverterMixin:
     class ConverterConfig:
         model: tp.Type[DeclarativeMeta] = None
+        extra: tp.Dict[tp.Any, tp.Dict] = None
 
     def get_foreign_key_filtered_column(
         self,
@@ -168,9 +169,6 @@ class SqlAlchemyFilterConverterMixin(SqlAlchemyBaseConverterMixin):
 
 
 class SqlAlchemyOrderConverterMixin(SqlAlchemyBaseConverterMixin):
-    class ConverterConfig:
-        model: tp.Type[DeclarativeMeta] = None
-
     def _get_order_unary_expression(
         self,
         field,
@@ -221,6 +219,8 @@ class SqlAlchemyOrderConverterMixin(SqlAlchemyBaseConverterMixin):
             ]
 
         for field in order_by:
+            field = str(field)
+
             models, filter_binary_expression = self._get_order_unary_expression(
                 field=field,
             )

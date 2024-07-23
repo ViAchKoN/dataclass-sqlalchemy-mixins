@@ -2,7 +2,9 @@ import typing as tp
 
 import pytest
 
-from core.pydantic.sqlalchemy_base_models import SqlAlchemyOrderBaseModel
+from dataclass_sqlalchemy_mixins.pydantic_mixins.sqlalchemy_base_models import (
+    SqlAlchemyOrderBaseModel,
+)
 
 
 @pytest.fixture

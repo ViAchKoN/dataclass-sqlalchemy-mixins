@@ -1,12 +1,17 @@
 [tool.poetry]
 name = "dataclass-sqlalchemy-mixins"
 version = "0.1.0"
-description = "Allows to convert pydantic dataclasses to sqlalchemy filters and orderings."
+description = "Allows to convert dataclasses to sqlalchemy filters and orderings."
 authors = ["ViAchKoN"]
 readme = "README.md"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
 
 [tool.poetry.dependencies]
-python = "^3.9"
+python = "^3.8.1"
 pydantic = "^1.9"
 sqlalchemy = "^1.4.0"
 
@@ -19,9 +24,9 @@ factory-boy = "^3.3.0"
 psycopg2-binary = "^2.9.9"
 black = "^24.4.2"
 isort = "^5.13.2"
-flake8 = "^7.1.0"
 pytest-cov = "^5.0.0"
-pre-commit = "^3.7.1"
+flake8 = "^7.1.0"
+pre-commit = "^3.0"
 
 
 [build-system]

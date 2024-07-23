@@ -3,7 +3,9 @@ import typing as tp
 import pydantic
 import pytest
 
-from core.pydantic.sqlalchemy_base_models import SqlAlchemyFilterBaseModel
+from dataclass_sqlalchemy_mixins.pydantic_mixins.sqlalchemy_base_models import (
+    SqlAlchemyFilterBaseModel,
+)
 
 
 pydantic_version = int(pydantic.__version__[0])
@@ -50,7 +52,7 @@ def get_sqlalchemy_filter_base_model():
                     if f_annotation:
                         new_annotations[f_name] = f_annotation
 
-                    # pydantic v1
+                    # pydantic_mixins v1
                     if pydantic_version < 2:
                         new_fields[f_name] = field_class.infer(
                             name=f_name,
@@ -59,15 +61,15 @@ def get_sqlalchemy_filter_base_model():
                             class_validators=None,
                             config=cls.__config__,
                         )
-                    # pydantic v2
+                    # pydantic_mixins v2
                     else:
                         new_fields[f_name] = field_class(annotation=f_annotation)
 
-                # pydantic v1
+                # pydantic_mixins v1
                 if pydantic_version < 2:
                     cls.__fields__.update(new_fields)
                     cls.__annotations__ = new_annotations
-                # pydantic v2
+                # pydantic_mixins v2
                 else:
                     cls.model_fields.update(new_fields)
                     cls.model_rebuild(force=True)
