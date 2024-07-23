@@ -4,6 +4,9 @@ import typing as tp
 import pytest
 from sqlalchemy import select
 
+from dataclass_sqlalchemy_mixins.pydantic_mixins.sqlalchemy_base_models import (
+    BaseModelConverterExtraParams,
+)
 from tests import models, models_factory
 
 
@@ -153,6 +156,135 @@ def test_filter__in_not_in__ok(
                 field: filter_values,
             },
         )
+
+        if query_type == "select":
+            query = select(models.Item)
+
+            if joined:
+                query = query.join(models.Group)
+
+            query = filters_model.apply_filters(query=query)
+            results = db_session.execute(query).scalars().all()
+        elif query_type == "query":
+            query = db_session.query(models.Item)
+
+            if joined:
+                query = query.join(models.Group)
+
+            query = filters_model.apply_filters(query=query)
+            results = query.all()
+        else:
+            query = db_session.query(models.Item).join(models.Group)
+
+            query = query.filter(*filters_model.to_binary_expressions())
+
+            results = query.all()
+
+        assert len(results) == len(expected_items)
+
+        for expected_item, result in zip(expected_items, results):
+            assert result.as_dict() == expected_item.as_dict()
+
+
+@pytest.mark.parametrize(
+    ("query_type", "joined"),
+    [
+        ("select", True),
+        ("select", False),
+        ("query", True),
+        ("query", False),
+        (None, None),
+    ],
+)
+@pytest.mark.parametrize(
+    "set_expected_types",
+    [
+        True,
+        False,
+    ],
+)
+def test_filter__in_not_in__list_as_string__ok(
+    db_session,
+    get_sqlalchemy_filter_base_model,
+    set_expected_types,
+    query_type,
+    joined,
+):
+    first_group_name = "first_group_name"
+
+    first_group = models_factory.GroupFactory.create(
+        name=first_group_name, with_item=True
+    )
+    first_item = (
+        db_session.query(models.Item)
+        .filter(models.Item.group_id == first_group.id)
+        .first()
+    )
+
+    second_group_name = "second_group_name"
+
+    second_group = models_factory.GroupFactory.create(
+        name=second_group_name, with_item=True
+    )
+    second_item = (
+        db_session.query(models.Item)
+        .filter(models.Item.group_id == second_group.id)
+        .first()
+    )
+
+    for field, filter_values, expected_items in (
+        (
+            "group__name__in",
+            [first_group_name, second_group_name],
+            [first_item, second_item],
+        ),
+        ("group__name__not_in", [first_group_name, second_group_name], []),
+        (
+            "group__name__in",
+            [
+                first_group_name,
+            ],
+            [
+                first_item,
+            ],
+        ),
+        (
+            "group__name__not_in",
+            [
+                first_group_name,
+            ],
+            [
+                second_item,
+            ],
+        ),
+    ):
+        filters_model = get_sqlalchemy_filter_base_model(
+            base_model=models.Item,
+            field_kwargs={
+                field: (tp.List[str], ...),
+            },
+            model_kwargs={
+                field: ",".join(filter_values),
+            },
+        )
+
+        extra_params = {
+            BaseModelConverterExtraParams.LIST_AS_STRING: {
+                "fields": [
+                    field,
+                ],
+            }
+        }
+
+        if set_expected_types:
+            extra_params = {
+                **extra_params,
+                "expected_types": {
+                    field: str,
+                },
+            }
+
+        filters_model.ConverterConfig.extra = extra_params
 
         if query_type == "select":
             query = select(models.Item)

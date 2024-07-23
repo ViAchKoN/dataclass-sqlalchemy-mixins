@@ -151,18 +151,25 @@ Currently, this parameter only accepts a dictionary with one key: `BaseModelConv
 This key instructs the converter to treat the passed string as a list in the context of filtering and ordering.
 
 For example, a class defined like this will convert the value passed for `field__in` into a list when applying filters and orderings.
-The value passed for `other_field__in` won't be treated a list because the field wasn't included in the `fields` set in `extra`.
+The value passed for `another_field__in` won't be treated a list because the field wasn't included in the `fields` set in `extra`. 
+
+Another parameter can be used is `expected_types`. 
+It is used to define which as which type should be elements of the list treated as when a str converted to a list. 
+If an expected type is not passed for a field it will be converted to a str.
 
 ```python
 class SomeSqlAlchemyFilterModel(SqlAlchemyFilterBaseModel):
     field__in: str = Query(None)
-    other_field__in: str = Query(None)
+    another_field__in: str = Query(None)
 
     class ConverterConfig:
         model = Item
         extra = {
             BaseModelConverterExtraParams.LIST_AS_STRING: {
-                'fields': 'field__in'
+                'fields': ['field__in', ],
+                'expected_types': {
+                    'field__in': int,
+                }
             }
         }
 ```

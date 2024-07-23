@@ -1,3 +1,4 @@
+import datetime
 import enum
 import typing as tp
 
@@ -36,12 +37,23 @@ class SqlAlchemyFilterBaseModel(
             for key, value in self.ConverterConfig.extra.items():
                 if key == BaseModelConverterExtraParams.LIST_AS_STRING:
                     fields = value.get("fields")
+                    expected_types = value.get("expected_types")
+
                     if fields:
                         for dict_key, dict_value in dict_values.items():
                             if dict_key in fields:
-                                dict_values[dict_key] = list(
-                                    map(str.strip, dict_value.split(","))
+                                expected_type = (
+                                    expected_types.get(dict_key)
+                                    if expected_types
+                                    else str
                                 )
+
+                                if expected_type is datetime.datetime:
+                                    expected_type = datetime.datetime.fromisoformat
+
+                                value = list(map(str.strip, dict_value.split(",")))
+
+                                dict_values[dict_key] = list(map(expected_type, value))
         return dict_values
 
     def to_binary_expressions(self):
@@ -55,7 +67,7 @@ class SqlAlchemyFilterBaseModel(
         self,
         query,
     ):
-        filters = self.dict(exclude_none=True)
+        filters = self._to_dict(exclude_none=True)
 
         filters_binary_expressions = self.get_models_binary_expressions(
             filters=filters,

@@ -1,16 +1,20 @@
+import datetime
 import datetime as dt
 import typing as tp
 
 import pytest
 from sqlalchemy import select
 
+from dataclass_sqlalchemy_mixins.pydantic_mixins.sqlalchemy_base_models import (
+    BaseModelConverterExtraParams,
+)
 from tests import models, models_factory
 
 
 @pytest.mark.parametrize(
     "apply_filters",
     [
-        # True,
+        True,
         False,
     ],
 )
@@ -134,6 +138,87 @@ def test_filter__in_not_in__ok(
         False,
     ],
 )
+def test_filter__in_not_in__list_as_string__ok(
+    db_session,
+    get_sqlalchemy_filter_base_model,
+    apply_filters,
+):
+    first_number = 1
+    first_item = models_factory.ItemFactory.create(
+        number=first_number,
+    )
+
+    second_number = 2
+    second_item = models_factory.ItemFactory.create(
+        number=second_number,
+    )
+
+    third_number = 3
+    third_item = models_factory.ItemFactory.create(
+        number=third_number,
+    )
+
+    fourth_number = 4
+    fourth_item = models_factory.ItemFactory.create(
+        number=4,
+    )
+
+    fifth_number = 5
+    fifth_item = models_factory.ItemFactory.create(
+        number=5,
+    )
+
+    assert db_session.query(models.Item).count() == 5
+
+    for field, expected_items in (
+        ("number__in", [fourth_item, fifth_item]),
+        ("number__not_in", [first_item, second_item, third_item]),
+    ):
+        filters_model = get_sqlalchemy_filter_base_model(
+            base_model=models.Item,
+            field_kwargs={
+                field: (str, ...),
+            },
+            model_kwargs={
+                field: f"{fourth_number}, {fifth_number}",
+            },
+        )
+
+        filters_model.ConverterConfig.extra = {
+            BaseModelConverterExtraParams.LIST_AS_STRING: {
+                "fields": [
+                    field,
+                ],
+                "expected_types": {
+                    field: int,
+                },
+            }
+        }
+
+        if apply_filters:
+            query = select(models.Item)
+            query = filters_model.apply_filters(query=query)
+            results = db_session.execute(query).scalars().all()
+        else:
+            results = (
+                db_session.query(models.Item)
+                .filter(*filters_model.to_binary_expressions())
+                .all()
+            )
+
+        assert len(results) == len(expected_items)
+
+        for expected_item, result in zip(expected_items, results):
+            assert result.as_dict() == expected_item.as_dict()
+
+
+@pytest.mark.parametrize(
+    "apply_filters",
+    [
+        True,
+        False,
+    ],
+)
 def test_filter__in_not_in__dates__ok(
     db_session,
     get_sqlalchemy_filter_base_model,
@@ -181,6 +266,89 @@ def test_filter__in_not_in__dates__ok(
                 field: [fourth_date, fifth_date],
             },
         )
+
+        if apply_filters:
+            query = select(models.Item)
+            query = filters_model.apply_filters(query=query)
+            results = db_session.execute(query).scalars().all()
+        else:
+            results = (
+                db_session.query(models.Item)
+                .filter(*filters_model.to_binary_expressions())
+                .all()
+            )
+
+        assert len(results) == len(expected_items)
+
+        for expected_item, result in zip(expected_items, results):
+            assert result.as_dict() == expected_item.as_dict()
+
+
+@pytest.mark.parametrize(
+    "apply_filters",
+    [
+        True,
+        False,
+    ],
+)
+def test_filter__in_not_in__dates__list_as_string__ok(
+    db_session,
+    get_sqlalchemy_filter_base_model,
+    apply_filters,
+):
+    now = dt.datetime.now()
+
+    first_date = now + dt.timedelta(days=1)
+    first_item = models_factory.ItemFactory.create(
+        created_at=first_date,
+    )
+
+    second_date = now + dt.timedelta(days=2)
+    second_item = models_factory.ItemFactory.create(
+        created_at=second_date,
+    )
+
+    third_date = now + dt.timedelta(days=3)
+    third_item = models_factory.ItemFactory.create(
+        created_at=third_date,
+    )
+
+    fourth_date = now + dt.timedelta(days=4)
+    fourth_item = models_factory.ItemFactory.create(
+        created_at=fourth_date,
+    )
+
+    fifth_date = now + dt.timedelta(days=5)
+    fifth_item = models_factory.ItemFactory.create(
+        created_at=fifth_date,
+    )
+
+    assert db_session.query(models.Item).count() == 5
+
+    for field, expected_items in (
+        ("created_at__in", [fourth_item, fifth_item]),
+        ("created_at__not_in", [first_item, second_item, third_item]),
+    ):
+        filters_model = get_sqlalchemy_filter_base_model(
+            base_model=models.Item,
+            field_kwargs={
+                field: (tp.List[dt.datetime], ...),
+            },
+            model_kwargs={
+                field: f"{fourth_date}, {fifth_date}",
+            },
+        )
+
+        filters_model.ConverterConfig.extra = {
+            BaseModelConverterExtraParams.LIST_AS_STRING: {
+                "fields": [
+                    field,
+                ],
+                "expected_types": {
+                    field: datetime.datetime,
+                },
+            }
+        }
 
         if apply_filters:
             query = select(models.Item)
