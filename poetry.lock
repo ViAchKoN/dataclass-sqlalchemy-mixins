@@ -1734,7 +1734,10 @@ files = [
     {file = "websockets-12.0.tar.gz", hash = "sha256:81df9cbcbb6c260de1e007e58c011bfebe2dafc8435107b0537f393dd38c8b1b"},
 ]
 
+[extras]
+pydantic = ["pydantic"]
+
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8.1"
-content-hash = "e2a9a529b657421a95f9519a4004fcc74e5c7ab1a9df716f8aba3219f757d2dc"
+content-hash = "3ed41b7be9221bca344e881ecc100e1ec12f94d93954489a4d27bcbe4298580f"
