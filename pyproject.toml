@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "dataclass-sqlalchemy-mixins"
-version = "0.1.0"
+version = "0.1.1"
 description = "Allows to convert dataclasses to sqlalchemy filters and orderings."
 authors = ["ViAchKoN"]
 readme = "README.md"
