@@ -199,3 +199,7 @@ class SomeSqlAlchemyFilterModel(SqlAlchemyFilterBaseModel):
     def __init__(self, field__in: typing.List[str] = Query(), **kwargs) -> None:
         super().__init__(field__in=field__in, **kwargs)
 ```
+
+____
+### Links
+[Github](https://github.com/ViAchKoN/dataclass-sqlalchemy-mixins)
