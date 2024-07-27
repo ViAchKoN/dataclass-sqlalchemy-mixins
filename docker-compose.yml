@@ -3,6 +3,7 @@ services:
   python:
     environment:
       POSTGRES_PASSWORD: postgres
+      POSTGRES_HOST: postgres
     image: python:3.8.1
     stdin_open: true
     tty: true
