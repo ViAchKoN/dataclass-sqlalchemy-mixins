@@ -7,7 +7,11 @@ _____
 ___
 ### Installation
 ```bash
+# without extras 
 pip install dataclass-sqlalchemy-mixins
+
+# with pydantic 
+pip install dataclass-sqlalchemy-mixins[pydantic]
 ```
 ___
 ### Description

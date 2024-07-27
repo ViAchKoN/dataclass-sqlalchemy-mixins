@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "dataclass-sqlalchemy-mixins"
-version = "0.1.1"
+version = "0.1.2"
 description = "Allows to convert dataclasses to sqlalchemy filters and orderings."
 authors = ["ViAchKoN"]
 readme = "README.md"
@@ -12,8 +12,8 @@ classifiers = [
 
 [tool.poetry.dependencies]
 python = "^3.8.1"
-pydantic = {version="^1.9", optional = true}
-sqlalchemy = "^1.4.0"
+pydantic = {version=">=1.9", optional = true}
+sqlalchemy = {version=">=1.4.2"}
 
 [tool.poetry.group.dev.dependencies]
 fastapi = "^0.111.0"
