@@ -9,19 +9,19 @@ from sqlalchemy_utils import create_database, database_exists, drop_database
 from tests.models import BaseModel
 
 
-TEST_DB_URL = (
-    "postgresql://{POSTGRES_CREDENTIALS}localhost/pydantic_sqlalchemy_filters_test"
-)
-
+TEST_DB_URL = "postgresql://{POSTGRES_CREDENTIALS}{POSTGRES_HOST}/pydantic_sqlalchemy_filters_test"
 
 POSTGRES_CREDENTIALS = ""
 POSTGRES_PASSWORD = os.getenv("POSTGRES_PASSWORD", None)
+POSTGRES_HOST = os.getenv("POSTGRES_HOST", "localhost")
 if POSTGRES_PASSWORD:
     POSTGRES_USER = os.getenv("POSTGRES_USER", "postgres")
     POSTGRES_CREDENTIALS = f"{POSTGRES_USER}:{POSTGRES_PASSWORD}@"
 
 
-TEST_DB_URL = TEST_DB_URL.format(POSTGRES_CREDENTIALS=POSTGRES_CREDENTIALS)
+TEST_DB_URL = TEST_DB_URL.format(
+    POSTGRES_CREDENTIALS=POSTGRES_CREDENTIALS, POSTGRES_HOST=POSTGRES_HOST
+)
 
 
 @pytest.fixture(scope="package")

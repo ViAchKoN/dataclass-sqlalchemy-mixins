@@ -1,0 +1,26 @@
+version: '3'
+services:
+  python:
+    environment:
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_HOST: postgres
+    image: python:3.8.1
+    stdin_open: true
+    tty: true
+    volumes:
+      - ../:/app
+    depends_on:
+      - postgres
+    command: >
+      bash -c "
+      cd /app &&
+      pip install poetry &&
+      poetry install &&
+      poetry run pytest"
+
+  postgres:
+    image: postgres:latest
+    environment:
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"

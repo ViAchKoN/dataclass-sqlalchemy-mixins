@@ -205,5 +205,12 @@ class SomeSqlAlchemyFilterModel(SqlAlchemyFilterBaseModel):
 ```
 
 ____
+### Docker Compose
+To run tests on your local machine
+```bash
+cd tests
+docker compose up
+```
+____
 ### Links
 [Github](https://github.com/ViAchKoN/dataclass-sqlalchemy-mixins)
