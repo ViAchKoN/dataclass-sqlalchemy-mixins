@@ -208,6 +208,7 @@ ____
 ### Docker Compose
 To run tests on your local machine
 ```bash
+cd tests
 docker compose up
 ```
 ____
