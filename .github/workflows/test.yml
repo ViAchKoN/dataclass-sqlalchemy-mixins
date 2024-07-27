@@ -67,10 +67,10 @@ jobs:
         run: poetry install --no-interaction
 
       - name: Install sqlalchemy ${{ matrix.sqlalchemy-version }}
-        run: poetry run pip install sqlalchemy==${{ matrix.sqlalchemy-version }}
+        run: poetry add sqlalchemy==${{ matrix.sqlalchemy-version }}
 
       - name: Install pydantic ${{ matrix.pydantic-version }}
-        run: poetry run pip install pydantic==${{ matrix.pydantic-version }}
+        run: poetry add pydantic==${{ matrix.pydantic-version }}
 
       - name: Run tests
         run: poetry run pytest  --cov-report=xml
