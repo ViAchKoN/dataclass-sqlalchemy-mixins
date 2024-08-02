@@ -119,6 +119,45 @@ query = query.filter(*binary_expression)
 query = query.apply_filters(query=query)
 ```
 
+Sometimes, it is necessary to manipulate sent data before applying filters. 
+For example, a field should not be directly converted to a filter; instead, custom logic should be applied. 
+As of version `0.1.3`, the `to_binary_expressions` and `apply_filters` methods accept the `export_params` argument to address this situation. 
+Values mentioned in the Pydantic dictionary [export section](https://docs.pydantic.dev/1.10/usage/exporting_models/ ) can be sent as `export_params`.
+
+```python
+import typing
+
+class CustomBaseModel(SqlAlchemyFilterBaseModel):
+    id__gte: int = None
+    name__in: typing.List[str] = None
+    filter_to_exclude: typing.Any = None 
+    
+    class ConverterConfig:
+        model = SomeModel 
+    
+
+custom_dataclass = CustomBaseModel(
+    id__gte=1,
+    name__in=['abc', 'def'],
+    filter_to_exclude="filter_value",
+)
+
+# filter_to_exclude field will be excluded from converting basemodel to sqlalchemy filters
+
+binary_expression = custom_dataclass.to_binary_expressions(
+    export_params={'exclude': {'filter_to_exclude'}, }
+)
+
+query = query.filter(*binary_expression)
+
+# or
+
+query = query.apply_filters(
+    query=query,
+    export_params={'exclude': {'filter_to_exclude'}, }
+)
+```
+
 Order by:
 ```python
 import typing

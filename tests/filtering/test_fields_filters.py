@@ -631,3 +631,65 @@ def test_filter__like_ilike__ok(
 
         for expected_item, result in zip(expected_items, results):
             assert result.as_dict() == expected_item.as_dict()
+
+
+@pytest.mark.parametrize(
+    "apply_filters",
+    [
+        True,
+        False,
+    ],
+)
+def test_filter__eq__dict_kwargs__ok(
+    db_session,
+    get_sqlalchemy_filter_base_model,
+    apply_filters,
+):
+    expected_item_name = "expected_item_name"
+
+    # Create expected item
+    expected_item = models_factory.ItemFactory.create(name=expected_item_name)
+
+    # Create unexpected items
+    unexpected_items = models_factory.ItemFactory.create_batch(size=4)
+
+    unexpected_items_ids = [unexpected_item.id for unexpected_item in unexpected_items]
+
+    filters_model = get_sqlalchemy_filter_base_model(
+        base_model=models.Item,
+        field_kwargs={"name": (str, ...), "id__in": (tp.List[int], ...)},
+        model_kwargs={
+            "name": expected_item_name,
+            "id__in": unexpected_items_ids,
+        },
+    )
+
+    assert db_session.query(models.Item).count() == 5
+
+    if apply_filters:
+        query = select(models.Item)
+        query = filters_model.apply_filters(
+            query=query,
+            export_params={
+                "exclude": {"id__in"},
+            },
+        )
+        results = db_session.execute(query).scalars().all()
+    else:
+        results = (
+            db_session.query(models.Item)
+            .filter(
+                *filters_model.to_binary_expressions(
+                    export_params={
+                        "exclude": {"id__in"},
+                    }
+                )
+            )
+            .all()
+        )
+
+    assert len(results) == 1
+
+    result = results[0]
+
+    assert result.as_dict() == expected_item.as_dict()
