@@ -56,8 +56,14 @@ class SqlAlchemyFilterBaseModel(
                                 dict_values[dict_key] = list(map(expected_type, value))
         return dict_values
 
-    def to_binary_expressions(self):
-        filters = self._to_dict(exclude_none=True)
+    def to_binary_expressions(
+        self,
+        export_params=None,
+    ):
+        if export_params is None:
+            export_params = dict()
+
+        filters = self._to_dict(exclude_none=True, **export_params)
 
         return self.get_binary_expressions(
             filters=filters,
@@ -66,8 +72,12 @@ class SqlAlchemyFilterBaseModel(
     def apply_filters(
         self,
         query,
+        export_params=None,
     ):
-        filters = self._to_dict(exclude_none=True)
+        if export_params is None:
+            export_params = dict()
+
+        filters = self._to_dict(exclude_none=True, **export_params)
 
         filters_binary_expressions = self.get_models_binary_expressions(
             filters=filters,
