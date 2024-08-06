@@ -1,7 +1,10 @@
+[![test](https://github.com/ViAchKoN/dataclass-sqlalchemy-mixins/workflows/Test/badge.svg?query=branch%3Amaster+event%3Apush)](https://github.com/ViAchKoN/dataclass-sqlalchemy-mixins/actions?query=branch%3Amaster+event%3Apush+workflow%3ATest++)
+[![python supported versions](https://img.shields.io/pypi/pyversions/dataclass-sqlalchemy-mixins.svg?color=%2334D058)](https://pypi.org/project/dataclass-sqlalchemy-mixins)
+
 # Dataclass Sqlalchemy Mixins
 _____
 ### Package requirements
-- `python >= 3.9`
+- `python >= 3.8.1`
 - `pydantic >= 1.9`
 - `sqlalchemy >= 1.4.0`
 ___
