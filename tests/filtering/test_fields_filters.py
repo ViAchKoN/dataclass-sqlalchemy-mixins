@@ -1,14 +1,55 @@
 import datetime
 import datetime as dt
 import typing as tp
+from dataclasses import asdict, dataclass
 
 import pytest
 from sqlalchemy import select
 
+from dataclass_sqlalchemy_mixins.base.mixins import SqlAlchemyFilterConverterMixin
 from dataclass_sqlalchemy_mixins.pydantic_mixins.sqlalchemy_base_models import (
     BaseModelConverterExtraParams,
 )
 from tests import models, models_factory
+
+
+def test_filter__dataclass__eq__ok(
+    db_session,
+    get_sqlalchemy_filter_base_model,
+):
+    expected_item_name = "expected_item_name"
+
+    # Create expected item
+    expected_item = models_factory.ItemFactory.create(name=expected_item_name)
+
+    # Create unexpected items
+    models_factory.ItemFactory.create_batch(size=4)
+
+    @dataclass
+    class CustomDataclass(SqlAlchemyFilterConverterMixin):
+        name: str = None
+
+        class ConverterConfig:
+            model = models.Item
+
+        def dict(self):
+            return {k: str(v) for k, v in asdict(self).items() if v is not None}
+
+    custom_dataclass = CustomDataclass(name=expected_item_name)
+
+    assert db_session.query(models.Item).count() == 5
+
+    results = (
+        db_session.query(models.Item)
+        .filter(*custom_dataclass.get_binary_expressions(custom_dataclass.dict()))
+        .all()
+    )
+
+    assert len(results) == 1
+
+    result = results[0]
+
+    assert result.as_dict() == expected_item.as_dict()
 
 
 @pytest.mark.parametrize(
