@@ -1,9 +1,57 @@
 import datetime as dt
+import typing as tp
+from dataclasses import dataclass
 
 import pytest
 from sqlalchemy import select
 
+from dataclass_sqlalchemy_mixins.base.mixins import SqlAlchemyOrderConverterMixin
 from tests import models, models_factory
+
+
+def test_order_by_id__dataclass__ok(
+    db_session,
+):
+    items = models_factory.ItemFactory.create_batch(size=5)
+
+    @dataclass
+    class CustomDataclass(SqlAlchemyOrderConverterMixin):
+        order_by: tp.Optional[tp.Union[str, tp.List[str]]] = None
+
+        class ConverterConfig:
+            model = models.Item
+
+    for order_by in [
+        "id",
+        [
+            "id",
+        ],
+        "-id",
+        [
+            "-id",
+        ],
+    ]:
+        custom_dataclass = CustomDataclass(order_by=order_by)
+
+        expected_items = items
+        if order_by in [
+            "-id",
+            [
+                "-id",
+            ],
+        ]:
+            expected_items = list(reversed(items))
+
+        results = (
+            db_session.query(models.Item)
+            .order_by(
+                *custom_dataclass.get_unary_expressions(custom_dataclass.order_by)
+            )
+            .all()
+        )
+
+        for expected_item, result in zip(expected_items, results):
+            assert result.as_dict() == expected_item.as_dict()
 
 
 @pytest.mark.parametrize(

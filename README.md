@@ -75,13 +75,10 @@ from dataclasses import dataclass, asdict
 
 @dataclass
 class CustomDataclass(SqlAlchemyOrderConverterMixin):
-    order_by: typing.Optional[typing.Optional[str, typing.List[str]]] = None
+    order_by: typing.Optional[typing.Union[str, typing.List[str]]] = None
     
     class ConverterConfig:
         model = SomeModel 
-    
-    def dict(self):
-        return {k: str(v) for k, v in asdict(self).items() if v is not None}
 
 custom_dataclass = CustomDataclass(
     order_by=['id', '-name']
@@ -107,19 +104,19 @@ class CustomBaseModel(SqlAlchemyFilterBaseModel):
         model = SomeModel 
     
 
-custom_dataclass = CustomBaseModel(
+custom_basemodel = CustomBaseModel(
     id__gte=1,
     name__in=['abc', 'def'],
     object__place=1,
 )
 
-binary_expression = custom_dataclass.to_binary_expressions()
+binary_expression = custom_basemodel.to_binary_expressions()
 
 query = query.filter(*binary_expression)
 
 # or
 
-query = query.apply_filters(query=query)
+query = custom_basemodel.apply_filters(query=query)
 ```
 
 Sometimes, it is necessary to manipulate sent data before applying filters. 
@@ -139,7 +136,7 @@ class CustomBaseModel(SqlAlchemyFilterBaseModel):
         model = SomeModel 
     
 
-custom_dataclass = CustomBaseModel(
+custom_basemodel = CustomBaseModel(
     id__gte=1,
     name__in=['abc', 'def'],
     filter_to_exclude="filter_value",
@@ -147,7 +144,7 @@ custom_dataclass = CustomBaseModel(
 
 # filter_to_exclude field will be excluded from converting basemodel to sqlalchemy filters
 
-binary_expression = custom_dataclass.to_binary_expressions(
+binary_expression = custom_basemodel.to_binary_expressions(
     export_params={'exclude': {'filter_to_exclude'}, }
 )
 
@@ -155,7 +152,7 @@ query = query.filter(*binary_expression)
 
 # or
 
-query = query.apply_filters(
+query = custom_basemodel.apply_filters(
     query=query,
     export_params={'exclude': {'filter_to_exclude'}, }
 )
@@ -173,17 +170,17 @@ class CustomBaseModel(SqlAlchemyOrderBaseModel):
     class ConverterConfig:
         model = SomeModel 
     
-custom_dataclass = CustomBaseModel(
+custom_basemodel = CustomBaseModel(
     order_by=['id', '-name']
 )
 
-unary_expressions = custom_dataclass.get_unary_expressions(custom_dataclass.order_by)
+unary_expressions = custom_basemodel.get_unary_expressions(custom_dataclass.order_by)
 
 query = query.order_by(*unary_expressions)
 
 # or 
 
-query = query.apply_order_by(query)
+query = custom_basemodel.apply_order_by(query)
 ```
 ____
 ### FastApi support 
