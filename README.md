@@ -35,6 +35,45 @@ To perform sorting the value should be passed as `id` to ASC and `-name` to DESC
 
 **Direct**
 
+Starting from version `0.2.0`, `get_binary_expressions` and `get_unary_expressions` were introduced, 
+allowing filters and ordering to be obtained without inheriting from dataclasses. 
+You just need to pass `filters`/`order_by` and a model you want to apply them to.
+There are located in `utils`.
+
+Filter:
+```python
+from dataclass_sqlalchemy_mixins.base import utils
+
+filters = {
+    'id__gte': 1,
+    'name__in': ['abc', 'def'],
+    'object__place': 1,
+}
+
+binary_expressions = utils.get_binary_expressions(
+    filters=filters,
+    model=SomeModel
+)
+
+query = query.filter(*binary_expressions)
+```
+
+Order by:
+```python
+from dataclass_sqlalchemy_mixins.base import utils
+
+order_by = ['id', '-name']
+
+unary_expressions = utils.get_unary_expressions(
+    order_by=order_by,
+    model=SomeModel,
+)
+
+query = query.order_by(*unary_expressions)
+```
+
+**Custom dataclasses**
+
 It is possible to apply mixins to custom dataclasses by inheriting from either `SqlAlchemyFilterConverterMixin` for filters or `SqlAlchemyOrderConverterMixin` for orderings.
 
 Filter:
@@ -42,6 +81,8 @@ Filter:
 import typing
 
 from dataclasses import dataclass, asdict
+
+from dataclass_sqlalchemy_mixins.base.mixins import SqlAlchemyFilterConverterMixin
 
 @dataclass
 class CustomDataclass(SqlAlchemyFilterConverterMixin):
@@ -62,16 +103,18 @@ custom_dataclass = CustomDataclass(
     object__place=1,
 )
 
-binary_expression = custom_dataclass.get_binary_expressions(custom_dataclass.dict())
+binary_expressions = custom_dataclass.get_binary_expressions(custom_dataclass.dict())
 
-query = query.filter(*binary_expression)
+query = query.filter(*binary_expressions)
 ```
 
 Order by:
 ```python
 import typing
 
-from dataclasses import dataclass, asdict
+from dataclasses import dataclass
+
+from dataclass_sqlalchemy_mixins.base.mixins import SqlAlchemyOrderConverterMixin
 
 @dataclass
 class CustomDataclass(SqlAlchemyOrderConverterMixin):
@@ -95,6 +138,8 @@ Filter:
 ```python
 import typing
 
+from dataclass_sqlalchemy_mixins.pydantic_mixins.sqlalchemy_base_models import SqlAlchemyFilterBaseModel
+
 class CustomBaseModel(SqlAlchemyFilterBaseModel):
     id__gte: int = None
     name__in: typing.List[str] = None
@@ -110,9 +155,9 @@ custom_basemodel = CustomBaseModel(
     object__place=1,
 )
 
-binary_expression = custom_basemodel.to_binary_expressions()
+binary_expressions = custom_basemodel.to_binary_expressions()
 
-query = query.filter(*binary_expression)
+query = query.filter(*binary_expressions)
 
 # or
 
@@ -126,6 +171,8 @@ Values mentioned in the Pydantic dictionary [export section](https://docs.pydant
 
 ```python
 import typing
+
+from dataclass_sqlalchemy_mixins.pydantic_mixins.sqlalchemy_base_models import SqlAlchemyFilterBaseModel
 
 class CustomBaseModel(SqlAlchemyFilterBaseModel):
     id__gte: int = None
@@ -161,6 +208,8 @@ query = custom_basemodel.apply_filters(
 Order by:
 ```python
 import typing
+
+from dataclass_sqlalchemy_mixins.pydantic_mixins.sqlalchemy_base_models import SqlAlchemyOrderBaseModel
 
 class CustomBaseModel(SqlAlchemyOrderBaseModel):
     id__gte: int = None
@@ -201,12 +250,17 @@ It is used to define which as which type should be elements of the list treated 
 If an expected type is not passed for a field it will be converted to a str.
 
 ```python
+from fastapi import Query
+
+from dataclass_sqlalchemy_mixins.pydantic_mixins.sqlalchemy_base_models import BaseModelConverterExtraParams
+from dataclass_sqlalchemy_mixins.pydantic_mixins.sqlalchemy_base_models import SqlAlchemyFilterBaseModel
+
 class SomeSqlAlchemyFilterModel(SqlAlchemyFilterBaseModel):
     field__in: str = Query(None)
     another_field__in: str = Query(None)
 
     class ConverterConfig:
-        model = Item
+        model = SomeModel
         extra = {
             BaseModelConverterExtraParams.LIST_AS_STRING: {
                 'fields': ['field__in', ],
@@ -221,11 +275,14 @@ The same applies to the classes inherited from `SqlAlchemyOrderBaseModel`,
 except that since the model accepts only the `order_by` field, it is not necessary to specify specific fields.
 
 ```python
+from dataclass_sqlalchemy_mixins.pydantic_mixins.sqlalchemy_base_models import BaseModelConverterExtraParams
+from dataclass_sqlalchemy_mixins.pydantic_mixins.sqlalchemy_base_models import SqlAlchemyOrderBaseModel
+
 class SomeSqlAlchemyOrderModel(SqlAlchemyOrderBaseModel):
     order_by: str = None
 
     class ConverterConfig:
-        model = Item
+        model = SomeModel
         extra = {
             BaseModelConverterExtraParams.LIST_AS_STRING: True
         }
@@ -236,6 +293,12 @@ class SomeSqlAlchemyOrderModel(SqlAlchemyOrderBaseModel):
 Also, it is possible not use `ConverterConfig` to correctly display lists in `Query` parameters using `FastApi`
 
 ```python
+import typing
+
+from fastapi import Query
+
+from dataclass_sqlalchemy_mixins.pydantic_mixins.sqlalchemy_base_models import SqlAlchemyFilterBaseModel
+
 class SomeSqlAlchemyFilterModel(SqlAlchemyFilterBaseModel):
     field__in: str
 
