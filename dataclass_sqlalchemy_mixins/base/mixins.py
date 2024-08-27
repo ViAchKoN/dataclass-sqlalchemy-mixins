@@ -140,9 +140,17 @@ class SqlAlchemyFilterConverterMixin(SqlAlchemyBaseConverterMixin):
         return models, getattr(db_field, sql_op)(value)
 
     def get_models_binary_expressions(
-        self,
-        filters: tp.Dict[str, tp.Any],
+        self, filters: tp.Dict[str, tp.Any], model: DeclarativeMeta = None
     ):
+        if model:
+            self.ConverterConfig.model = model
+
+        if self.ConverterConfig.model is None:
+            raise ValueError(
+                "ConverterConfig.model value can't be None. "
+                "Either pass the model parameter or set the ConverterConfig.model."
+            )
+
         model_filters = []
 
         for field, value in filters.items():
@@ -161,10 +169,14 @@ class SqlAlchemyFilterConverterMixin(SqlAlchemyBaseConverterMixin):
     def get_binary_expressions(
         self,
         filters: tp.Dict[str, tp.Any],
+        model: DeclarativeMeta = None,
     ):
         return [
             binary_expression["binary_expression"]
-            for binary_expression in self.get_models_binary_expressions(filters=filters)
+            for binary_expression in self.get_models_binary_expressions(
+                filters=filters,
+                model=model,
+            )
         ]
 
 
@@ -210,7 +222,17 @@ class SqlAlchemyOrderConverterMixin(SqlAlchemyBaseConverterMixin):
     def get_models_unary_expressions(
         self,
         order_by: tp.Union[tp.Any, tp.List],
+        model: DeclarativeMeta = None,
     ):
+        if model:
+            self.ConverterConfig.model = model
+
+        if self.ConverterConfig.model is None:
+            raise ValueError(
+                "ConverterConfig.model value can't be None. "
+                "Either pass the model parameter or set the ConverterConfig.model."
+            )
+
         model_order_by = []
 
         if isinstance(order_by, str):
@@ -233,12 +255,12 @@ class SqlAlchemyOrderConverterMixin(SqlAlchemyBaseConverterMixin):
         return model_order_by
 
     def get_unary_expressions(
-        self,
-        order_by: tp.Union[str, tp.List[str]],
+        self, order_by: tp.Union[str, tp.List[str]], model: DeclarativeMeta = None
     ):
         return [
             binary_expression["unary_expression"]
             for binary_expression in self.get_models_unary_expressions(
-                order_by=order_by
+                order_by=order_by,
+                model=model,
             )
         ]

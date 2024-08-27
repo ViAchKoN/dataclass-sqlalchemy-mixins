@@ -5,6 +5,7 @@ from dataclasses import dataclass
 import pytest
 from sqlalchemy import select
 
+from dataclass_sqlalchemy_mixins.base import utils
 from dataclass_sqlalchemy_mixins.base.mixins import SqlAlchemyOrderConverterMixin
 from tests import models, models_factory
 
@@ -46,6 +47,45 @@ def test_order_by_id__dataclass__ok(
             db_session.query(models.Item)
             .order_by(
                 *custom_dataclass.get_unary_expressions(custom_dataclass.order_by)
+            )
+            .all()
+        )
+
+        for expected_item, result in zip(expected_items, results):
+            assert result.as_dict() == expected_item.as_dict()
+
+
+def test_order_by_id__utils__ok(
+    db_session,
+):
+    items = models_factory.ItemFactory.create_batch(size=5)
+
+    for order_by in [
+        "id",
+        [
+            "id",
+        ],
+        "-id",
+        [
+            "-id",
+        ],
+    ]:
+        expected_items = items
+        if order_by in [
+            "-id",
+            [
+                "-id",
+            ],
+        ]:
+            expected_items = list(reversed(items))
+
+        results = (
+            db_session.query(models.Item)
+            .order_by(
+                *utils.get_unary_expressions(
+                    order_by=order_by,
+                    model=models.Item,
+                )
             )
             .all()
         )
