@@ -87,6 +87,39 @@ def test_filter__utils__eq__ok(
     assert result.as_dict() == expected_item.as_dict()
 
 
+def test_filter__utils__apply__eq__ok(
+    db_session,
+    get_sqlalchemy_filter_base_model,
+):
+    expected_item_name = "expected_item_name"
+
+    # Create expected item
+    expected_item = models_factory.ItemFactory.create(name=expected_item_name)
+
+    # Create unexpected items
+    models_factory.ItemFactory.create_batch(size=4)
+
+    assert db_session.query(models.Item).count() == 5
+
+    query = db_session.query(models.Item)
+
+    query = utils.apply_filters(
+        query=query,
+        filters={
+            "name": expected_item_name,
+        },
+        model=models.Item,
+    )
+
+    results = query.all()
+
+    assert len(results) == 1
+
+    result = results[0]
+
+    assert result.as_dict() == expected_item.as_dict()
+
+
 @pytest.mark.parametrize(
     "apply_filters",
     [

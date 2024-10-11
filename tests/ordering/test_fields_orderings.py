@@ -94,6 +94,44 @@ def test_order_by_id__utils__ok(
             assert result.as_dict() == expected_item.as_dict()
 
 
+def test_order_by_id__utils__apply__ok(
+    db_session,
+):
+    items = models_factory.ItemFactory.create_batch(size=5)
+
+    for order_by in [
+        "id",
+        [
+            "id",
+        ],
+        "-id",
+        [
+            "-id",
+        ],
+    ]:
+        expected_items = items
+        if order_by in [
+            "-id",
+            [
+                "-id",
+            ],
+        ]:
+            expected_items = list(reversed(items))
+
+        query = db_session.query(models.Item)
+
+        query = utils.apply_order_by(
+            query=query,
+            order_by=order_by,
+            model=models.Item,
+        )
+
+        results = query.all()
+
+        for expected_item, result in zip(expected_items, results):
+            assert result.as_dict() == expected_item.as_dict()
+
+
 @pytest.mark.parametrize(
     "apply_order_by",
     [
