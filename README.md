@@ -35,10 +35,44 @@ To perform sorting the value should be passed as `id` to ASC and `-name` to DESC
 
 **Direct**
 
+Starting from version `0.3.0`, `apply_filters` and `apply_order_by` were added, 
+allowing you to apply filters and ordering to a query without using dataclasses. 
+They are located in utils.
+
+Filter:
+```python
+from dataclass_sqlalchemy_mixins.base import utils
+
+filters = {
+    'id__gte': 1,
+    'name__in': ['abc', 'def'],
+    'object__place': 1,
+}
+
+query = utils.apply_filters(
+    query=query,
+    filters=filters,
+    model=SomeModel
+)
+```
+
+Order by:
+```python
+from dataclass_sqlalchemy_mixins.base import utils
+
+order_by = ['id', '-name']
+
+query = utils.apply_order_by(
+    query=query,
+    order_by=order_by,
+    model=SomeModel,
+)
+```
+
 Starting from version `0.2.0`, `get_binary_expressions` and `get_unary_expressions` were introduced, 
 allowing filters and ordering to be obtained without inheriting from dataclasses. 
 You just need to pass `filters`/`order_by` and a model you want to apply them to.
-There are located in `utils`.
+They are located in `utils`.
 
 Filter:
 ```python
@@ -191,11 +225,11 @@ custom_basemodel = CustomBaseModel(
 
 # filter_to_exclude field will be excluded from converting basemodel to sqlalchemy filters
 
-binary_expression = custom_basemodel.to_binary_expressions(
+binary_expressions = custom_basemodel.to_binary_expressions(
     export_params={'exclude': {'filter_to_exclude'}, }
 )
 
-query = query.filter(*binary_expression)
+query = query.filter(*binary_expressions)
 
 # or
 
