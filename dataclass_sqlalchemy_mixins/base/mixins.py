@@ -47,7 +47,7 @@ class SqlAlchemyBaseConverterMixin:
 
                 if related_model:
                     # Updating original model to continue search
-                    model = related_model.argument
+                    model = related_model.entity.class_
                     models.append(model)
                     continue
 

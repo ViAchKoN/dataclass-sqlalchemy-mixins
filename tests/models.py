@@ -66,7 +66,7 @@ class Group(BaseModel):
             Owner.id,
         ),
     )
-    owner = relationship(Owner)
+    owner = relationship("Owner")
 
     items = relationship("Item", back_populates="group", lazy="dynamic")
 
