@@ -26,9 +26,10 @@ class SqlAlchemyBaseConverterMixin:
         model: tp.Type[DeclarativeMeta] = None
         extra: tp.Dict[tp.Any, tp.Dict] = None
 
-    def get_foreign_key_filtered_column(
+    def get_foreign_key_path(
         self,
         models_path_to_look: tp.List[str],
+        to_return_column=True,
     ) -> tp.Tuple[tp.List[DeclarativeMeta], tp.Union[None, InstrumentedAttribute]]:
         model = self.ConverterConfig.model
 
@@ -53,7 +54,9 @@ class SqlAlchemyBaseConverterMixin:
 
             # If related model is None
             # we might come to field required filtering
-            foreign_key_db_column = getattr(model, path, None)
+            foreign_key_db_column = None
+            if to_return_column:
+                foreign_key_db_column = getattr(model, path, None)
             return models, foreign_key_db_column
 
         return models, None
@@ -119,7 +122,7 @@ class SqlAlchemyFilterConverterMixin(SqlAlchemyBaseConverterMixin):
                 filter_params = filter_params[:-1]
 
             if len(filter_params) > 1:
-                models, db_field = self.get_foreign_key_filtered_column(
+                models, db_field = self.get_foreign_key_path(
                     models_path_to_look=filter_params,
                 )
                 if db_field is None:
@@ -202,7 +205,7 @@ class SqlAlchemyOrderConverterMixin(SqlAlchemyBaseConverterMixin):
             order_params = field.split("__")
 
             if len(order_params) > 1:
-                models, db_field = self.get_foreign_key_filtered_column(
+                models, db_field = self.get_foreign_key_path(
                     models_path_to_look=order_params,
                 )
                 if db_field is None:
