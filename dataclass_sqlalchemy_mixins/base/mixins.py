@@ -1,7 +1,8 @@
 import typing as tp
 
 from sqlalchemy import inspect
-from sqlalchemy.orm import DeclarativeMeta, InstrumentedAttribute
+from sqlalchemy.orm import DeclarativeMeta, InstrumentedAttribute, Query
+from sqlalchemy.orm.util import _ORMJoin
 
 
 SQLALCHEMY_OP_MATCHER = {
@@ -62,6 +63,17 @@ class SqlAlchemyBaseConverterMixin:
         return models, None
 
     def join_models(self, query, models: tp.List[DeclarativeMeta]):
+        def find_tables(query_from):
+            found_tables = []
+
+            if isinstance(query_from, _ORMJoin):
+                left = query_from.left
+                right = query_from.right
+
+                found_tables.append(right)
+                return found_tables + find_tables(left)
+            return found_tables
+
         query = query
 
         joined_models = []
@@ -80,8 +92,18 @@ class SqlAlchemyBaseConverterMixin:
                 if joined_models:
                     break
 
+        # Sometimes on all joined models can not be found using join methods
+        # so trying to find it one more time if we haven't found them eariler
+        joined_tables = []
+        if not joined_models and not isinstance(query, Query):
+            query_froms = query.froms
+            for query_from in query_froms:
+                joined_tables.extend(find_tables(query_from))
+
         for model in models:
             if model != self.ConverterConfig.model and model not in joined_models:
+                if joined_tables and model.__table__ in joined_tables:
+                    continue
                 query = query.join(model)
 
         return query
