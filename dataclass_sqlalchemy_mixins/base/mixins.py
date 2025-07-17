@@ -27,6 +27,16 @@ class SqlAlchemyBaseConverterMixin:
         model: tp.Type[DeclarativeMeta] = None
         extra: tp.Dict[tp.Any, tp.Dict] = None
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Create instance-specific ConverterConfig to avoid shared state between instances
+        from types import SimpleNamespace
+
+        self.ConverterConfig = SimpleNamespace(
+            model=getattr(self.__class__.ConverterConfig, "model", None),
+            extra=getattr(self.__class__.ConverterConfig, "extra", None),
+        )
+
     def get_foreign_key_path(
         self,
         models_path_to_look: tp.List[str],
